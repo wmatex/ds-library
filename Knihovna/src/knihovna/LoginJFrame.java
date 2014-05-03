@@ -116,7 +116,7 @@ public class LoginJFrame extends JFrame{
         }
         
         private User getUser(String name, String password){
-            return new User("Lukas", "bla@bla.cz", 1);
+            return new User(name, "bla@bla.cz", 1);
             
         }
     }
