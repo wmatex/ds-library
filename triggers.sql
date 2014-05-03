@@ -25,7 +25,8 @@ INNER JOIN (
   SELECT id_titul, COUNT(*) as cnt
   FROM vytisk
   GROUP BY id_titul
-) v2 ON v2.id_titul = t.id_titul;
+) v2 ON v2.id_titul = t.id_titul
+ORDER BY t.id_titul ASC;
 
 CREATE OR REPLACE FUNCTION vytvor_rezervaci(
   _id_uzivatel int, _id_titul int, _interval interval) RETURNS VOID AS $_$
@@ -55,3 +56,14 @@ BEGIN
   WHERE id_uzivatel = _id_uzivatel AND id_titul = _id_titul;
 END;
 $_$ LANGUAGE plpgsql;
+
+-- Nevracene vypujcky
+CREATE OR REPLACE VIEW vw_vypujcka
+SELECT u.id_uzivatel, u.krestni_jmeno, u.prijmeni, u.email, t.id_titul,
+t.nazev, vp.id_vypujcka, vp.datum_pujceni, vp.datum_vraceni, vp.je_vraceno
+FROM vypujcka vp
+INNER JOIN vytisk vt ON vp.id_vytisk = vt.id_vytisk
+INNER JOIN titul t ON t.id_titul = vt.id_titul
+INNER JOIN uzivatel u ON u.id_uzivatel = vp.id_uzivatel
+WHERE vp.je_vraceno = FALSE
+ORDER BY vp.datum_vraceni DESC;
