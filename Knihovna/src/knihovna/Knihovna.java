@@ -16,8 +16,10 @@ public class Knihovna {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        DatabaseManager.init();
         LoginJFrame login = new LoginJFrame();
         login.setVisible(true);
+        //DatabaseManager.destroy();
     }
     
 }

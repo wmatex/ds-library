@@ -12,18 +12,16 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import knihovna.entity.Uzivatel;
 
 /**
  *
  * @author tomanlu2
  */
 public class NormalUserJPanel extends JPanel {
-    User user;
+    Uzivatel user;
     MainJFrame mainFrame;
-    private JButton logoutJButton;
-    private JLabel userJLabel;
-    private JPanel userJPanel;
-    public NormalUserJPanel(User user, MainJFrame mainFrame) {
+    public NormalUserJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
         this.user = user;
         init();
@@ -31,23 +29,6 @@ public class NormalUserJPanel extends JPanel {
     
     private void init(){
         setLayout(new BorderLayout());
-        
-        userJLabel = new JLabel("Prihlasen jako " + user.getName());
-        logoutJButton = new JButton("Odhlasit");
-        userJPanel = new JPanel();
-        
-        logoutJButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                LoginJFrame login = new LoginJFrame();
-                login.setVisible(true);
-                mainFrame.dispose();
-            }
-        });
-        userJPanel.add(userJLabel);
-        userJPanel.add(logoutJButton);
-       
-        add(userJPanel, BorderLayout.NORTH );
     }
 
 }

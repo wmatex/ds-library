@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,24 +21,25 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import knihovna.entity.Titul;
+import knihovna.entity.Uzivatel;
+import knihovna.entity.VwVypujcka;
+import knihovna.entity.Vytisk;
 
 /**
  *
  * @author tomanlu2
  */
 public class AdminJPanel extends JPanel {
-    User user;
+    Uzivatel user;
     MainJFrame mainFrame;
-    private JButton logoutJButton;
-    private JLabel userJLabel;
-    private JPanel userJPanel;
     private JPanel menuJPanel;
     private JButton newBorrowingJButton;
     private JButton reservationsJButton;
     private JButton newUserJButton;
     private JButton borrowsJButton;
     
-    public AdminJPanel(User user, MainJFrame mainFrame) {
+    public AdminJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
         this.user = user;
         init();
@@ -45,24 +47,6 @@ public class AdminJPanel extends JPanel {
     
     private void init(){
         setLayout(new BorderLayout());
-        
-        userJLabel = new JLabel("Prihlasen jako " + user.getName());
-        logoutJButton = new JButton("Odhlasit");
-        userJPanel = new JPanel();
-        
-        logoutJButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                LoginJFrame login = new LoginJFrame();
-                login.setVisible(true);
-                mainFrame.dispose();
-            }
-        });
-        userJPanel.add(userJLabel);
-        userJPanel.add(logoutJButton);
-        
-        add(userJPanel, BorderLayout.SOUTH );
-        
         Dimension buttonsDim = new Dimension(200, 25);
         
         menuJPanel = new JPanel();
@@ -80,55 +64,47 @@ public class AdminJPanel extends JPanel {
         newBorrowingJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                 String barcode = JOptionPane.showInputDialog(null, "Zadejte carovy kod knihy", "Carovy kod", JOptionPane.QUESTION_MESSAGE);
-                 if(barcode != null){
-                    if(checkBarcode(barcode)){
-                        String reader = JOptionPane.showInputDialog(null, "Zadejte email ctenare", "Ctenar", JOptionPane.QUESTION_MESSAGE);
-                        if(reader != null){
-                            if(checkReader(reader)){
-                                //newBorrowing(barcode, reader);
-                                 JOptionPane.showMessageDialog(null, "Vypujcka vytvorena", "Nova vypucjka", JOptionPane.PLAIN_MESSAGE);
+                String barcode = JOptionPane.showInputDialog(null, "Zadejte čárový kód výtisku", "Čárový kód", 
+                     JOptionPane.QUESTION_MESSAGE);
+                if(barcode != null){
+                    DatabaseManager dbManager = DatabaseManager.getInstance();
+                    Vytisk print = dbManager.getPrintByBarcode(barcode);
+                    if (print != null) {
+                        Titul titul = print.getIdTitul();
+                        String email = JOptionPane.showInputDialog(null, "Titul: " + titul.getNazev() + 
+                            "\nZadejte email čtenáře", "Čtenář", JOptionPane.QUESTION_MESSAGE);
+                        if(email != null){
+                            Uzivatel user = dbManager.getUserByEmail(email);
+                            if(email != null){
+                                dbManager.createBorrowing(print, user);
+                                 JOptionPane.showMessageDialog(null, "Vypujcka vytvorena", "Nová výpůjčka", 
+                                     JOptionPane.PLAIN_MESSAGE);
                             }else{
-                                JOptionPane.showMessageDialog(null, "Ctenar: '" + reader + "' neexistuje", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Čtenář: '" + email + "' neexistuje", "Chyba", 
+                                    JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     }else{
-                        JOptionPane.showMessageDialog(null, "Vytisk s carovym kodem: '" + barcode + "' neexistuje", "Chyba", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Výtisk s čárovým kódem: '" + barcode + "' neexistuje", 
+                            "Chyba", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
         });
-        
-        reservationsJButton.addActionListener(new ActionListener() {
+
+        borrowsJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                String reader = JOptionPane.showInputDialog(null, "Zadejte email ctenare", "Ctenar", JOptionPane.QUESTION_MESSAGE);
-                        if(reader != null){
-                            if(checkReader(reader)){
-                                Reservation[] reservations = getReservations(reader);
-                                JList list = new JList(reservations);
-                                list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-                                list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-                                list.setVisibleRowCount(-1);
-                                JScrollPane listScroller = new JScrollPane(list);
-                                Box vBox = Box.createVerticalBox();
-                                JLabel label = new JLabel("Vyberte rezervace");
-                                vBox.add(label);
-                                vBox.add(listScroller);
-                                JOptionPane.showMessageDialog(null,vBox,"Rezervace",JOptionPane.INFORMATION_MESSAGE);
-                                Object[] selectedObjects = list.getSelectedValues();
-                                Reservation[] selectedReservations = new Reservation[selectedObjects.length];
-                                for(int i = 0; i < selectedObjects.length; i++){
-                                    selectedReservations[i] = (Reservation)selectedObjects[i];
-                                }
-                                //newBorrowing(selectedReservations, reader);
-                               if(selectedReservations[0] != null)
-                                JOptionPane.showMessageDialog(null, "Vypujcka vytvorena", "Nova vypucjka", JOptionPane.PLAIN_MESSAGE);
-                             
-                             }else{
-                                JOptionPane.showMessageDialog(null, "Ctenar: '" + reader + "' neexistuje", "Chyba", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                List<Uzivatel> users = dbManager.getUsers();
+                Uzivatel selectedUser = (Uzivatel)AdminJPanel.multipleChoices("Vyberte čtenáře", "Čtenář", users.toArray());
+                if(selectedUser != null){
+                    List<VwVypujcka> borrows = dbManager.getBorrowsOfUser(selectedUser);
+                    AdminJPanel.multipleChoices("Seznam výpůjček", "Výpůjčky", borrows.toArray());
+                    
+                }else{
+                    JOptionPane.showMessageDialog(null, "Ctenar: '" + selectedUser.toString() + "' neexistuje", "Chyba", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         
@@ -179,28 +155,6 @@ public class AdminJPanel extends JPanel {
             }
         });
         
-        borrowsJButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                String reader = JOptionPane.showInputDialog(null, "Zadejte email ctenare", "Ctenar", JOptionPane.QUESTION_MESSAGE);
-                        if(reader != null){
-                            if(checkReader(reader)){
-                                Borrowing[] borrows = getBorrows(reader);
-                                Reservation selectedBorrow = (Reservation)JOptionPane.showInputDialog(null, "Vyberte rezervaci k vypujceni", "Rezervace",
-JOptionPane.INFORMATION_MESSAGE, null,
-borrows, borrows[0]);
-                                //newBorrowing(selectedValue, reader);
-                                if(selectedBorrow != null)
-                                JOptionPane.showMessageDialog(null, "Vypujcka " + selectedBorrow +" vracena", "Vracena vypujcka ", JOptionPane.PLAIN_MESSAGE);
-                            
-                             }else{
-                                JOptionPane.showMessageDialog(null, "Ctenar: '" + reader + "' neexistuje", "Chyba", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-            }
-
-            
-        });
         
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
@@ -212,31 +166,14 @@ borrows, borrows[0]);
         
     }
     
-    private boolean checkBarcode(String barcode){
-        //najde knihu
-        return barcode.equals("Ahoj");
-    }
-
-    private boolean checkReader(String reader){
-        //najde ctenare
-        return reader.equals("Neco");
-    }
-    
-    private Reservation[] getReservations(String reader){
-        Reservation[] reservations = new Reservation[10];
-        reservations[0] = new Reservation(new User(reader, "asd", 0), new Book("Lukas", "neco", 1895, 30));
-        reservations[1] = new Reservation(new User(reader, "gghjasd", 0), new Book("LNj", "nesado", 1895, 30));
-        reservations[2] = new Reservation(new User(reader, "aghjsd", 0), new Book("Luasdsasdasdsadsadsadasd", "nasdasdo", 1895, 30));
-        return reservations;
-        
-    }
-    
     private boolean newUser(String name, String email, String password){
         return true;
         
     }
-    
-    private Borrowing[] getBorrows(String reader) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+
+    private static Object multipleChoices(String message, String title, Object[] choices) {
+        return JOptionPane.showInputDialog(null, message, title,
+            JOptionPane.QUESTION_MESSAGE, null,
+            choices, choices[0]);
+    }
 }
