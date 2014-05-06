@@ -3,22 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package knihovna;
+package knihovna.gui;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.UnsupportedEncodingException;
-import static java.lang.System.exit;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -27,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
 
 /**
@@ -122,7 +115,7 @@ public class LoginJFrame extends JFrame {
                     JOptionPane.showMessageDialog(LoginJFrame.this, "Váš systém není podporován. Kontaktujte podporu.",
                         "Chyba", JOptionPane.ERROR_MESSAGE);
                     dispose();
-                    exit(1);
+                    System.exit(1);
                 }
                 if (user != null) {
                     MainJFrame jm = new MainJFrame(user);

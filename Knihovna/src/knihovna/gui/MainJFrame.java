@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package knihovna;
+package knihovna.gui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

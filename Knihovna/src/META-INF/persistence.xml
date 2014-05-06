@@ -8,6 +8,7 @@
     <class>knihovna.entity.Vytisk</class>
     <class>knihovna.entity.Zanr</class>
     <class>knihovna.entity.Titul</class>
+    <class>knihovna.entity.Autor</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://krizik.felk.cvut.cz:5434/"/>
       <property name="javax.persistence.jdbc.user" value="student_db13_21"/>

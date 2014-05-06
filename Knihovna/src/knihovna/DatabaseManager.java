@@ -10,10 +10,14 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
+import javax.persistence.RollbackException;
 import knihovna.entity.Uzivatel;
 import knihovna.entity.VwVypujcka;
 import knihovna.entity.Vytisk;
@@ -81,13 +85,17 @@ public class DatabaseManager {
         }
     }
 
-    public boolean createBorrowing(Vytisk print, Uzivatel user) {
+    public void createBorrowing(Vytisk print, Uzivatel user) {
         VwVypujcka borrowing = new VwVypujcka(print.getIdVytisk(), user.getIdUzivatel());
 
-        mEm.getTransaction().begin();
-        mEm.persist(borrowing);
-        mEm.getTransaction().commit();
-        return true;
+        EntityTransaction transaction = mEm.getTransaction();
+        try {
+            transaction.begin();
+            mEm.persist(borrowing);
+            transaction.commit();
+        } catch (PersistenceException ex) {
+            throw new EntityExistsException();
+        }
     }
 
     public List<Uzivatel> getUsers() {

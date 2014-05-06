@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package knihovna;
+package knihovna.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -29,6 +29,19 @@ public class NormalUserJPanel extends JPanel {
     
     private void init(){
         setLayout(new BorderLayout());
+
+        JButton button = new JButton("Hledat knihu");
+        add(button, BorderLayout.CENTER);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                SearchDialog searchFrame = 
+                    new SearchDialog(null,
+                    user, "Hledat knihu");
+                searchFrame.setVisible(true);
+            }
+            
+        });
     }
 
 }

@@ -29,14 +29,8 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author wmatex
  */
 @Entity
-@XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Titul.findAll", query = "SELECT t FROM Titul t"),
-    @NamedQuery(name = "Titul.findByIdTitul", query = "SELECT t FROM Titul t WHERE t.idTitul = :idTitul"),
-    @NamedQuery(name = "Titul.findByNazev", query = "SELECT t FROM Titul t WHERE t.nazev = :nazev"),
-    @NamedQuery(name = "Titul.findByRokVydani", query = "SELECT t FROM Titul t WHERE t.rokVydani = :rokVydani"),
-    @NamedQuery(name = "Titul.findByVypujcniDobaDny", query = "SELECT t FROM Titul t WHERE t.vypujcniDobaDny = :vypujcniDobaDny"),
-    @NamedQuery(name = "Titul.findByCena", query = "SELECT t FROM Titul t WHERE t.cena = :cena")})
+})
 public class Titul implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

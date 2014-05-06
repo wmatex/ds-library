@@ -9,9 +9,15 @@ package knihovna.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -19,6 +25,13 @@ import javax.persistence.Table;
  * @author wmatex
  */
 @Entity
+@NamedQueries({
+    @NamedQuery(
+        name="searchForTitul",
+        query="SELECT t FROM VwTitul t "
+            + "WHERE t.nazev LIKE :nazev "
+    )
+})
 @Table(name = "vw_titul")
 public class VwTitul implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -35,6 +48,14 @@ public class VwTitul implements Serializable {
     private String zanr;
     @Column(name = "volne_vytisky")
     private Integer volneVytisky;
+
+    @ManyToMany
+    @JoinTable(
+        name="titul_autor",
+        joinColumns=@JoinColumn(name="id_titul"),
+        inverseJoinColumns=@JoinColumn(name="id_autor")
+    )
+    private Collection<Autor> autors;
 
     public VwTitul() {
     }
