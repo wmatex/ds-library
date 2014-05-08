@@ -9,6 +9,7 @@ package knihovna;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
@@ -19,6 +20,7 @@ import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwTitul;
 import knihovna.entity.VwVypujcka;
 import knihovna.entity.Vytisk;
 
@@ -28,8 +30,9 @@ import knihovna.entity.Vytisk;
  */
 public class DatabaseManager {
     private static DatabaseManager mInstance = null;
-    private EntityManager mEm;
-    private EntityManagerFactory mEmf;
+    private final EntityManager mEm;
+    private final EntityManagerFactory mEmf;
+    private static final int PAGE_SIZE = 10;
     
     private DatabaseManager() {
         mEmf = Persistence.createEntityManagerFactory("KnihovnaPU");
@@ -83,6 +86,14 @@ public class DatabaseManager {
         } catch (NoResultException ex) {
             return null;
         }
+    }
+
+    public Collection<VwTitul> searchTitles(String name, int pageno) {
+        return mEm.createNamedQuery("VwTitul.searchForTitul", VwTitul.class)
+            .setParameter(1, name)
+            .setParameter(2, PAGE_SIZE)
+            .setParameter(3, pageno*PAGE_SIZE)
+            .getResultList();
     }
 
     public void createBorrowing(Vytisk print, Uzivatel user) {

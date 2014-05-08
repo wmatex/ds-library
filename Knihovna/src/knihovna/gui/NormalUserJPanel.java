@@ -7,6 +7,7 @@
 package knihovna.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -29,9 +30,13 @@ public class NormalUserJPanel extends JPanel {
     
     private void init(){
         setLayout(new BorderLayout());
-
+        Dimension buttonsDim = new Dimension(200, 25);
+        
+        JPanel menuJPanel = new JPanel();
+        
         JButton button = new JButton("Hledat knihu");
-        add(button, BorderLayout.CENTER);
+        button.setPreferredSize(buttonsDim);
+        menuJPanel.add(button);
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -42,6 +47,8 @@ public class NormalUserJPanel extends JPanel {
             }
             
         });
+
+        add(menuJPanel, BorderLayout.CENTER);
     }
 
 }

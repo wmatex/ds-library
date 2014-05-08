@@ -10,14 +10,19 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import knihovna.DatabaseManager;
+import knihovna.entity.Autor;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwTitul;
 
 /**
  *
@@ -27,6 +32,7 @@ public class SearchDialog extends JDialog {
     private Uzivatel user;
     private JPanel searchPanel;
     private JPanel buttonPanel;
+    private JTextField nameField;
 
     public SearchDialog(JFrame parent, Uzivatel user, String title) {
         super(parent);
@@ -44,7 +50,7 @@ public class SearchDialog extends JDialog {
         Box hbox = Box.createHorizontalBox();
         JPanel namePanel = new JPanel();
         JLabel nameLabel = new JLabel("Zadejte název knihy");
-        JTextField nameField = new JTextField(12);
+        nameField = new JTextField(12);
         namePanel.add(nameLabel);
         
         namePanel.add(nameField);
@@ -54,12 +60,48 @@ public class SearchDialog extends JDialog {
 
         buttonPanel = new JPanel(new FlowLayout());
         JButton searchButton = new JButton("Hledat");
-        searchButton.addActionListener(new ActionListener() {
+        final SearchDialog dialog = this;
+        ActionListener listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                String criteria = nameField.getText();
+                Collection<VwTitul> titules = dbManager.searchTitles(criteria, 0);
+                if (titules.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, 
+                        "Vašemu kritériu neodpovídá žádný titul",
+                        "Žádný výsledek", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    String[] columnNames = {
+                        "Název",
+                        "Autor",
+                        "Rok vydání",
+                        "Žánr",
+                        "Volné výtisky"
+                    };
+                    Object[][] data = new Object[titules.size()][];
+                    int i = 0;
+                    for (VwTitul row: titules) {
+                        data[i] = new Object[5];
+                        data[i][0] = row.getNazev();
+                        data[i][1] = generateAutorString(row);
+                        data[i][2] = row.getRokVydani();
+                        data[i][3] = row.getZanr();
+                        data[i][4] = row.getVolneVytisky();
+                        i++;
+                    }
+
+                    TableDialog tableDialog = new TableDialog(user, "Výsledky hledání");
+                    tableDialog.setTableFromResultSet(columnNames, data);
+                    tableDialog.setVisible(true);
+                    
+                }
             }
             
-        });
+        };
+
+        searchButton.addActionListener(listener);
+        nameField.addActionListener(listener);
         JButton closeButton = new JButton("Zavřít");
         final JDialog parentDialog = this;
         closeButton.addActionListener(new ActionListener() {
@@ -75,5 +117,17 @@ public class SearchDialog extends JDialog {
 
         pack();
         setLocationRelativeTo(parent);
+    }
+
+    private String generateAutorString(VwTitul titul) {
+        String autorString = "";
+        Collection<Autor> authors = titul.getAutors();
+        String delim = "";
+        for (Autor author: authors) {
+            autorString += delim + author.getJmeno() + " " + author.getPrijmeni();
+            delim = ", ";
+        }
+
+        return autorString;
     }
 }

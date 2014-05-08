@@ -16,6 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -25,11 +27,12 @@ import javax.persistence.Table;
  * @author wmatex
  */
 @Entity
-@NamedQueries({
-    @NamedQuery(
-        name="searchForTitul",
-        query="SELECT t FROM VwTitul t "
-            + "WHERE t.nazev LIKE :nazev "
+@NamedNativeQueries({
+    @NamedNativeQuery(
+        name="VwTitul.searchForTitul",
+        query="SELECT t.* FROM vw_titul t "
+            + "WHERE t.nazev ~* ? LIMIT ? OFFSET ?",
+        resultClass=VwTitul.class
     )
 })
 @Table(name = "vw_titul")
@@ -110,5 +113,9 @@ public class VwTitul implements Serializable {
 
     public Integer getVolneVytisky() {
         return volneVytisky;
+    }
+
+    public Collection<Autor> getAutors() {
+        return autors;
     }
 }
