@@ -59,11 +59,11 @@ public class MainJFrame extends JFrame{
         infoJPanel.setLayout(new java.awt.BorderLayout());
         
         userJLabel.setText(user.getKrestniJmeno() + " " + user.getPrijmeni());
-        logoutJButton.setText("OdhlÃ¡sit se");
+        logoutJButton.setText("Odhlásit se");
         logoutJPanel.add(userJLabel);
         logoutJPanel.add(logoutJButton);
         
-        settingsJButton.setText("NastavenÃ­");
+        settingsJButton.setText("Nastavení");
         settingsJPanel.add(settingsJButton);
         
         infoJPanel.add(settingsJPanel,java.awt.BorderLayout.WEST);
@@ -74,10 +74,10 @@ public class MainJFrame extends JFrame{
         setPreferredSize(new Dimension(400,400));
         tabs = new JTabbedPane();
         userPanel = new NormalUserJPanel(user, this);
-        tabs.addTab("ÄŒtenÃ¡Å™", userPanel);
+        tabs.addTab("Ètenáø", userPanel);
         if (user.getRole() == 2) {
             adminPanel = new AdminJPanel(user, this);
-            tabs.addTab("ZamÄ›stnanec", adminPanel);
+            tabs.addTab("Zamìstnanec", adminPanel);
         }
 
         getContentPane().add(tabs, java.awt.BorderLayout.CENTER);
@@ -115,9 +115,9 @@ public class MainJFrame extends JFrame{
                         JPasswordField againPasswordJField = new javax.swing.JPasswordField(15);
                         JPanel againPasswordJPanel = new javax.swing.JPanel();
                         
-                        oldPasswordJLabel.setText("StarÃ© heslo:");
-                        newPasswordJLabel.setText("NovÃ© heslo:");
-                        againPasswordJLabel.setText("NovÃ© heslo znovu:");
+                        oldPasswordJLabel.setText("Staré heslo:");
+                        newPasswordJLabel.setText("Nové heslo:");
+                        againPasswordJLabel.setText("Nové heslo znovu:");
                         
                         oldPasswordJPanel.add(oldPasswordJLabel);
                         oldPasswordJPanel.add(oldPasswordJField);
@@ -132,23 +132,23 @@ public class MainJFrame extends JFrame{
                         vBox.add(oldPasswordJPanel);
                         vBox.add(newPasswordJPanel);
                         vBox.add(againPasswordJPanel);
-                        int option = JOptionPane.showConfirmDialog(null, vBox, "ZmÄ›na hesla",JOptionPane.OK_CANCEL_OPTION);
+                        int option = JOptionPane.showConfirmDialog(null, vBox, "Zmìna hesla",JOptionPane.OK_CANCEL_OPTION);
                         if(option == JOptionPane.OK_OPTION){
                             String oldPassword = oldPasswordJField.getText();
                             String newPassword = newPasswordJField.getText();
                             String againPassword = againPasswordJField.getText();
                             if( "".equals(oldPassword) || "".equals(newPassword) || "".equals(againPassword)){
-                                JOptionPane.showMessageDialog(null,"VyplÅˆte vÅ¡echny Ãºdaje", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Vyplòte všechny údaje", "Chyba", JOptionPane.ERROR_MESSAGE);
                             }else{
                                 if(user.getHeslo().equals(oldPassword)){
                                     if(newPassword.equals(againPassword)){
                                         user.setHeslo(newPassword);
-                                        JOptionPane.showMessageDialog(null,"Heslo zmÄ›nÄ›no", "ZmÄ›na hesla", JOptionPane.PLAIN_MESSAGE);
+                                        JOptionPane.showMessageDialog(null,"Heslo zmìnìno", "Zmìna hesla", JOptionPane.PLAIN_MESSAGE);
                                     }else{
-                                        JOptionPane.showMessageDialog(null,"NovÃ¡ hesla se neshodujÃ­", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                        JOptionPane.showMessageDialog(null,"Nová hesla se neshodují", "Chyba", JOptionPane.ERROR_MESSAGE);
                                     }
                                 }else{
-                                    JOptionPane.showMessageDialog(null,"StarÃ© heslo je chybnÃ©", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                    JOptionPane.showMessageDialog(null,"Staré heslo je chybné", "Chyba", JOptionPane.ERROR_MESSAGE);
                          
                                 }
                                 
@@ -157,9 +157,9 @@ public class MainJFrame extends JFrame{
                     }
                 
                 });
-                passwordJButton.setText("ZmÄ›na hesla");
+                passwordJButton.setText("Zmìna hesla");
                 panel.add(passwordJButton);
-                JOptionPane.showMessageDialog(null, panel, "NastavenÃ­",JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, panel, "Nastavení",JOptionPane.INFORMATION_MESSAGE);
             }
             
         });

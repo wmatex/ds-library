@@ -51,10 +51,10 @@ public class AdminJPanel extends JPanel {
         
         menuJPanel = new JPanel();
         
-        newBorrowingJButton = new JButton("Nov√° v√Ωp≈Øjƒçka");
-        reservationsJButton = new JButton("Spr√°va rezervac√≠");
-        newUserJButton = new JButton("Nov√Ω u≈æivatel");
-        borrowsJButton = new JButton("V√Ωpujƒçky");
+        newBorrowingJButton = new JButton("Nov· v˝pujËka");
+        reservationsJButton = new JButton("Spr·va rezervacÌ");
+        newUserJButton = new JButton("Nov˝ uûivatel");
+        borrowsJButton = new JButton("V˝p˘jËky");
         
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
@@ -66,13 +66,13 @@ public class AdminJPanel extends JPanel {
             public void actionPerformed(ActionEvent evt) {
                 DatabaseManager dbManager = DatabaseManager.getInstance();
                 String email = JOptionPane.showInputDialog(null,
-                    "Zadejte email ƒçten√°≈ôe", "ƒåten√°≈ô", JOptionPane.QUESTION_MESSAGE);
+                    "Zadejte email Ëten·¯e", "»ten·¯", JOptionPane.QUESTION_MESSAGE);
                 if(email != null){
                     Uzivatel user = dbManager.getUserByEmail(email);
                     if (user != null) {
                         showBorrowDialog(user);
                     } else {
-                        JOptionPane.showMessageDialog(null, "ƒåten√°≈ô: '" + email + "' neexistuje", "Chyba",
+                        JOptionPane.showMessageDialog(null, "»ten·¯: '" + email + "' neexistuje", "Chyba",
                             JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -82,18 +82,6 @@ public class AdminJPanel extends JPanel {
         borrowsJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                DatabaseManager dbManager = DatabaseManager.getInstance();
-                List<Uzivatel> users = dbManager.getUsers();
-                Uzivatel selectedUser = (Uzivatel)AdminJPanel.multipleChoices("Vyberte ƒçten√°≈ôe", "ƒåten√°≈ô", 
-                    users.toArray());
-                if(selectedUser != null){
-                    List<VwVypujcka> borrows = dbManager.getBorrowsOfUser(selectedUser);
-                    AdminJPanel.multipleChoices("Seznam v√Ωp≈Øjƒçek", "V√Ωp≈Øjƒçky", borrows.toArray());
-                    
-                }else{
-                    JOptionPane.showMessageDialog(null, "Ctenar: '" + selectedUser.toString() + "' neexistuje", 
-                        "Chyba", JOptionPane.ERROR_MESSAGE);
-                }
             }
         });
         
@@ -106,7 +94,7 @@ public class AdminJPanel extends JPanel {
                 JPanel emailPanel = new JPanel();
                 Box vBox = Box.createVerticalBox();
                 
-                JLabel nameJLabel = new JLabel("Jmeno: ");
+                JLabel nameJLabel = new JLabel("JmÈno: ");
                                 
                 JTextField nameJTextField = new JTextField(10);
                 
@@ -160,20 +148,20 @@ public class AdminJPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout(0,10));
 
-        JLabel label = new JLabel("<html>Zad√°v√°te v√Ωp≈Øjƒçky pro u≈æivatele <i>" + 
+        JLabel label = new JLabel("<html>Zad·v·te v˝pujËky pro uûivatele <i>" + 
             user.getKrestniJmeno() + " " + user.getPrijmeni() +
-            "</i><br>Zadejte ƒç√°rov√Ω k√≥d v√Ωp≈Øjƒçky</html>");
+            "</i><br>Zadejte Ë·rov˝ kÛd v˝tisku</html>");
         panel.add(label, BorderLayout.NORTH);
         final JTextField textField = new JTextField(13);
         panel.add(textField, BorderLayout.CENTER);
         JButton loadButton = new JButton();
-        loadButton.setText("Naƒç√≠st k√≥d");
+        loadButton.setText("NaËÌst kÛd");
         panel.add(loadButton, BorderLayout.EAST);
         final JLabel infoLabel = new JLabel(" ");
         panel.add(infoLabel, BorderLayout.SOUTH);
 
         JButton create = new JButton();
-        create.setText("Vytvo≈ôit v√Ωp≈Øjƒçku");
+        create.setText("Vytvo¯it novou v˝pujËku");
         create.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -181,18 +169,18 @@ public class AdminJPanel extends JPanel {
                 String barcode = textField.getText();
                 Vytisk print = dbManager.getPrintByBarcode(barcode);
                 if (print == null) {
-                    JOptionPane.showMessageDialog(null, "V√Ωtisk s t√≠mto ƒç√°rov√Ωm k√≥dem neexistuje",
+                    JOptionPane.showMessageDialog(null, "V˝tisk s tÌmto Ë·rov˝m kÛdem neexistuje",
                         "Chyba", JOptionPane.ERROR_MESSAGE);
                 } else {
                     try {
                         dbManager.createBorrowing(print, user);
                     } catch (EntityExistsException ex) {
-                        JOptionPane.showMessageDialog(null, "Tento v√Ωtisk je ji≈æ p≈Øjƒçen√Ω",
+                        JOptionPane.showMessageDialog(null, "Tento v˝tisk je jiû p˘jËen˝",
                             "Chyba", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                     Titul t = print.getIdTitul();
-                    infoLabel.setText("Vytvo≈ôena v√Ωp≈Øjƒçka pro titul " + t.getNazev());
+                    infoLabel.setText("Vytvo¯ena v˝p˘jËka pro titul " + t.getNazev());
                     textField.setText("");
                     textField.requestFocus();
                 }
@@ -205,7 +193,7 @@ public class AdminJPanel extends JPanel {
                 DatabaseManager dbManager = DatabaseManager.getInstance();
                 Vytisk print = dbManager.getPrintByBarcode(barcode);
                 if (print == null) {
-                    infoLabel.setText("V√Ωtisk s t√≠mto ƒç√°rov√Ωm k√≥dem neexistuje");
+                    infoLabel.setText("V˝tisk s tÌmto Ë·rov˝m kÛdem neexistuje");
                     textField.selectAll();
                 } else {
                     Titul t = print.getIdTitul();
@@ -214,7 +202,7 @@ public class AdminJPanel extends JPanel {
             }
             
         });
-        final JButton cancel = new JButton("Zru≈°it");
+        final JButton cancel = new JButton("Zruöit");
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -225,7 +213,7 @@ public class AdminJPanel extends JPanel {
         });
         JOptionPane.showOptionDialog(null,
             panel, 
-            "V√Ωp≈Øjƒçka", 
+            "V˝pujËka", 
             JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE,
             null,
