@@ -40,7 +40,7 @@ public class LoginJFrame extends JFrame {
     private JPanel buttonPanel;
 
     public LoginJFrame() {
-        super("Pøihlášení");
+        super("PÅ™ihlÃ¡Å¡enÃ­");
         init();
     }
 
@@ -58,9 +58,9 @@ public class LoginJFrame extends JFrame {
         buttonPanel = new JPanel();
 
         informationJLabel = new JLabel();
-        informationJLabel.setText("Vítejte v systému knihovny. Pøihlaste se prosím.");
+        informationJLabel.setText("VÃ­tejte v systÃ©mu knihovny. PÅ™ihlaste se prosÃ­m.");
 
-        nameJLabel = new JLabel("Jméno: ");
+        nameJLabel = new JLabel("JmÃ©no: ");
         nameJLabel.setPreferredSize(labelsDim);
 
         nameJTextField = new JTextField();
@@ -74,7 +74,7 @@ public class LoginJFrame extends JFrame {
         passwordJPasswordField.setPreferredSize(fieldsDim);
         passwordJPasswordField.addActionListener(new LoginActionListener());
 
-        okJButton = new JButton("Pøihlásit se");
+        okJButton = new JButton("PÅ™ihlÃ¡sit se");
         okJButton.addActionListener(new LoginActionListener());
 
         namePanel.add(nameJLabel);
@@ -105,14 +105,14 @@ public class LoginJFrame extends JFrame {
             name = nameJTextField.getText();
             password = passwordJPasswordField.getText();
             if (name.equals("") || password.equals("")) {
-                JOptionPane.showMessageDialog(LoginJFrame.this, "Vyplòte prosím všechny údaje", "Upozornìní", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(LoginJFrame.this, "VyplÅˆte prosÃ­m vÅ¡echny Ãºdaje", "UpozornÄ›nÃ­", JOptionPane.WARNING_MESSAGE);
             } else {
                 DatabaseManager dbManager = DatabaseManager.getInstance();
                 Uzivatel user = null;
                 try {
                     user = dbManager.login(name, password);
                 } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-                    JOptionPane.showMessageDialog(LoginJFrame.this, "Váš systém není podporován. Kontaktujte podporu.",
+                    JOptionPane.showMessageDialog(LoginJFrame.this, "VÃ¡Å¡ systÃ©m nenÃ­ podporovÃ¡n. Kontaktujte podporu.",
                         "Chyba", JOptionPane.ERROR_MESSAGE);
                     dispose();
                     System.exit(1);
@@ -123,7 +123,7 @@ public class LoginJFrame extends JFrame {
                     dispose();
                 } else {
                     passwordJPasswordField.setText("");
-                    JOptionPane.showMessageDialog(LoginJFrame.this, "Neexistující uživatel nebo neplatné heslo", "Chyba",
+                    JOptionPane.showMessageDialog(LoginJFrame.this, "NeexistujÃ­cÃ­ uÅ¾ivatel nebo Å¡patnÃ© heslo", "Chyba",
                         JOptionPane.ERROR_MESSAGE);
                 }
             }

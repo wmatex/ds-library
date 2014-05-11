@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import knihovna.DatabaseManager;
 import knihovna.entity.Titul;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwRezervace;
 import knihovna.entity.VwVypujcka;
 import knihovna.entity.Vytisk;
 
@@ -51,10 +52,10 @@ public class AdminJPanel extends JPanel {
         
         menuJPanel = new JPanel();
         
-        newBorrowingJButton = new JButton("Nov� v�puj�ka");
-        reservationsJButton = new JButton("Spr�va rezervac�");
-        newUserJButton = new JButton("Nov� u�ivatel");
-        borrowsJButton = new JButton("V�p�j�ky");
+        newBorrowingJButton = new JButton("Nová výpůjčka");
+        reservationsJButton = new JButton("Správa rezervací");
+        newUserJButton = new JButton("Nový uživatel");
+        borrowsJButton = new JButton("Výpujčky");
         
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
@@ -66,13 +67,13 @@ public class AdminJPanel extends JPanel {
             public void actionPerformed(ActionEvent evt) {
                 DatabaseManager dbManager = DatabaseManager.getInstance();
                 String email = JOptionPane.showInputDialog(null,
-                    "Zadejte email �ten��e", "�ten��", JOptionPane.QUESTION_MESSAGE);
+                    "Zadejte email čtenáře", "Čtenář", JOptionPane.QUESTION_MESSAGE);
                 if(email != null){
                     Uzivatel user = dbManager.getUserByEmail(email);
                     if (user != null) {
                         showBorrowDialog(user);
                     } else {
-                        JOptionPane.showMessageDialog(null, "�ten��: '" + email + "' neexistuje", "Chyba",
+                        JOptionPane.showMessageDialog(null, "Čtenář: '" + email + "' neexistuje", "Chyba",
                             JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -82,7 +83,54 @@ public class AdminJPanel extends JPanel {
         borrowsJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
+                JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout(0,10));
+
+                JLabel label = new JLabel("Zadejte čárové kódy knih k vrácení");
+        panel.add(label, BorderLayout.NORTH);
+        final JTextField textField = new JTextField(13);
+        panel.add(textField, BorderLayout.CENTER);
+        JButton loadButton = new JButton();
+        loadButton.setText("Načíst kód");
+        panel.add(loadButton, BorderLayout.EAST);
+        final JLabel infoLabel = new JLabel(" ");
+        panel.add(infoLabel, BorderLayout.SOUTH);
+
+        JButton create = new JButton();
+        create.setText("Vrátit knihu");
+        create.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                String barcode = textField.getText();
+                Vytisk print = dbManager.getPrintByBarcode(barcode);
+                if (print == null) {
+                    JOptionPane.showMessageDialog(null, "Výtisk s tímto čárovým kódem neexistuje",
+                        "Chyba", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    try {
+                        
+                    } catch (EntityExistsException ex) {
+                        JOptionPane.showMessageDialog(null, "Tento výtisk je již půjčený",
+                            "Chyba", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    Titul t = print.getIdTitul();
+                    infoLabel.setText("Vytvořena výpůjčka pro titul " + t.getNazev());
+                    textField.setText("");
+                    textField.requestFocus();
+                }
             }
+        });
+            JOptionPane.showOptionDialog(null,
+            panel, 
+            "Výpůjčka", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            new Object[] {create},
+            create);}
+            
         });
         
         newUserJButton.addActionListener(new ActionListener() {
@@ -90,23 +138,23 @@ public class AdminJPanel extends JPanel {
             public void actionPerformed(ActionEvent evt) {
                 
                 JPanel namePanel = new JPanel();
-                JPanel passwordPanel = new JPanel();
+                JPanel surnamePanel = new JPanel();
                 JPanel emailPanel = new JPanel();
                 Box vBox = Box.createVerticalBox();
                 
-                JLabel nameJLabel = new JLabel("Jm�no: ");
+                JLabel nameJLabel = new JLabel("Jméno: ");
                                 
                 JTextField nameJTextField = new JTextField(10);
                 
                 namePanel.add(nameJLabel);
                 namePanel.add(nameJTextField);
                 
-                JLabel passwordJLabel = new JLabel("Heslo: ");
+                JLabel surnameJLabel = new JLabel("Příjmení: ");
                 
-                JPasswordField passwordJField = new JPasswordField(10);
+                JTextField surnameJTextField = new JTextField(10);
                 
-                passwordPanel.add(passwordJLabel);
-                passwordPanel.add(passwordJField);
+                surnamePanel.add(surnameJLabel);
+                surnamePanel.add(surnameJTextField);
                 
                 JLabel emailJLabel = new JLabel("Email: ");
                 
@@ -116,21 +164,68 @@ public class AdminJPanel extends JPanel {
                 emailPanel.add(emailJTextField);
                 
                 vBox.add(namePanel);
-                vBox.add(passwordPanel);
+                vBox.add(surnamePanel);
                 vBox.add(emailPanel);
-                
-                JOptionPane.showMessageDialog(null,vBox,"Novy uzivatel",JOptionPane.INFORMATION_MESSAGE);
-                if(newUser(nameJTextField.getText(), emailJTextField.getText(), passwordJField.getText())){
-                    JOptionPane.showMessageDialog(null,"Novy uzivatel vytvoren","Novy uzivatel", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                while(true){
+                int result = JOptionPane.showConfirmDialog(null,vBox,"Nový uživatel", JOptionPane.OK_CANCEL_OPTION );
+                if(result == JOptionPane.CLOSED_OPTION || result == JOptionPane.CANCEL_OPTION)
+                    break;
+                if("".equals(nameJTextField.getText()) || "".equals(surnameJTextField.getText()) || "".equals(emailJTextField.getText())){
+                    JOptionPane.showMessageDialog(null,"Vyplňte všechny údaje","Upozornění", 
+                        JOptionPane.WARNING_MESSAGE);
                 }
                 else{
-                    JOptionPane.showMessageDialog(null,"Nepodaril se vytvorit novy uzivatel ","Chyba", 
-                        JOptionPane.ERROR_MESSAGE);
+                    String password = newUser(nameJTextField.getText(), surnameJTextField.getText(), emailJTextField.getText());
+                    if(password != null){
+                    JOptionPane.showMessageDialog(null,"Vytvořen uživatel '" + emailJTextField.getText() + "' s heslem: "+ password ,"Vytvořeno", 
+                        JOptionPane.INFORMATION_MESSAGE);break;
                 }
-            }
+                }
+            }}
         });
         
+        reservationsJButton.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                String email = JOptionPane.showInputDialog(null,
+                    "Zadejte email čtenáře", "Čtenář", JOptionPane.QUESTION_MESSAGE);
+                if(email != null){
+                    Uzivatel user = dbManager.getUserByEmail(email);
+                    if (user != null) {
+                        List<VwRezervace> reservations = dbManager.getReservationsOfUser(user);
+                        if (reservations.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, 
+                            "Uživatel nemá žádné rezervace",
+                            "Žádné rezervace", JOptionPane.WARNING_MESSAGE);
+                        } else {
+                            String[] columnNames = {
+                            "Název",
+                            "Autor",
+                            "Pořadí"                           
+                         };
+                            Object[][] data = new Object[reservations.size()][];
+                            int i = 0;
+                            for (VwRezervace row: reservations) {
+                                data[i] = new Object[3];
+                                data[i][0] = row.getNazev();
+                                data[i][1] = row.getSplnena();
+                                data[i][2] = row.getPoradi();
+                                
+                                i++;
+                    }TableDialog tableDialog = new TableDialog(user, "Rezervace");
+                    tableDialog.setTableFromResultSet(columnNames, data);
+                    tableDialog.setVisible(true);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Čtenář: '" + email + "' neexistuje", "Chyba",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+            
+        });
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
         menuJPanel.add(newUserJButton);
@@ -139,29 +234,36 @@ public class AdminJPanel extends JPanel {
         add(menuJPanel, BorderLayout.CENTER);
     }
     
-    private boolean newUser(String name, String email, String password){
-        return true;
+    private String newUser(String name, String surname, String email){
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+        try {
+            dbManager.createUser(name, surname, email);
+        } catch (EntityExistsException ex) {
+            JOptionPane.showMessageDialog(null, "Email je již používán","Chyba", JOptionPane.ERROR_MESSAGE);
+                        return null;
+        }
+        return dbManager.getUserByEmail(email).getHeslo();
         
     }
-
+    
     private void showBorrowDialog(final Uzivatel user) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout(0,10));
 
-        JLabel label = new JLabel("<html>Zad�v�te v�puj�ky pro u�ivatele <i>" + 
+        JLabel label = new JLabel("<html>Zadáváte výpůjčky pro uživatele <i>" + 
             user.getKrestniJmeno() + " " + user.getPrijmeni() +
-            "</i><br>Zadejte ��rov� k�d v�tisku</html>");
+            "</i><br>Zadejte čárový kód výpůjčky</html>");
         panel.add(label, BorderLayout.NORTH);
         final JTextField textField = new JTextField(13);
         panel.add(textField, BorderLayout.CENTER);
         JButton loadButton = new JButton();
-        loadButton.setText("Na��st k�d");
+        loadButton.setText("Načíst kód");
         panel.add(loadButton, BorderLayout.EAST);
         final JLabel infoLabel = new JLabel(" ");
         panel.add(infoLabel, BorderLayout.SOUTH);
 
         JButton create = new JButton();
-        create.setText("Vytvo�it novou v�puj�ku");
+        create.setText("Vytvořit výpůjčku");
         create.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -169,18 +271,18 @@ public class AdminJPanel extends JPanel {
                 String barcode = textField.getText();
                 Vytisk print = dbManager.getPrintByBarcode(barcode);
                 if (print == null) {
-                    JOptionPane.showMessageDialog(null, "V�tisk s t�mto ��rov�m k�dem neexistuje",
+                    JOptionPane.showMessageDialog(null, "Výtisk s tímto čárovým kódem neexistuje",
                         "Chyba", JOptionPane.ERROR_MESSAGE);
                 } else {
                     try {
                         dbManager.createBorrowing(print, user);
                     } catch (EntityExistsException ex) {
-                        JOptionPane.showMessageDialog(null, "Tento v�tisk je ji� p�j�en�",
+                        JOptionPane.showMessageDialog(null, "Tento výtisk je již půjčený",
                             "Chyba", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                     Titul t = print.getIdTitul();
-                    infoLabel.setText("Vytvo�ena v�p�j�ka pro titul " + t.getNazev());
+                    infoLabel.setText("Vytvořena výpůjčka pro titul " + t.getNazev());
                     textField.setText("");
                     textField.requestFocus();
                 }
@@ -193,7 +295,7 @@ public class AdminJPanel extends JPanel {
                 DatabaseManager dbManager = DatabaseManager.getInstance();
                 Vytisk print = dbManager.getPrintByBarcode(barcode);
                 if (print == null) {
-                    infoLabel.setText("V�tisk s t�mto ��rov�m k�dem neexistuje");
+                    infoLabel.setText("Výtisk s tímto čárovým kódem neexistuje");
                     textField.selectAll();
                 } else {
                     Titul t = print.getIdTitul();
@@ -202,7 +304,7 @@ public class AdminJPanel extends JPanel {
             }
             
         });
-        final JButton cancel = new JButton("Zru�it");
+        final JButton cancel = new JButton("Zrušit");
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -213,7 +315,7 @@ public class AdminJPanel extends JPanel {
         });
         JOptionPane.showOptionDialog(null,
             panel, 
-            "V�puj�ka", 
+            "Výpůjčka", 
             JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE,
             null,

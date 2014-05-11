@@ -61,6 +61,13 @@ public class Uzivatel implements Serializable {
         this.idUzivatel = idUzivatel;
     }
 
+    public Uzivatel(String krestniJmeno, String prijmeni, String email) {
+        this.krestniJmeno = krestniJmeno;
+        this.prijmeni = prijmeni;
+        this.email = email;
+        
+    }
+
     public Uzivatel(Integer idUzivatel, String krestniJmeno, String prijmeni, String email, String heslo, short role) {
         this.idUzivatel = idUzivatel;
         this.krestniJmeno = krestniJmeno;

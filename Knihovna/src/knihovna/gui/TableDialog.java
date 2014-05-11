@@ -40,7 +40,7 @@ public class TableDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setModal(true);
         setLayout(new BorderLayout(10,10));
-        JButton closeButton = new JButton("Zavøít");
+        JButton closeButton = new JButton("ZavÅ™Ã­t");
         final JDialog dialog = this;
         closeButton.addActionListener(new ActionListener() {
             @Override

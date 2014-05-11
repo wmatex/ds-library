@@ -49,7 +49,7 @@ public class SearchDialog extends JDialog {
         searchPanel = new JPanel(new BorderLayout(10, 10));
         Box hbox = Box.createHorizontalBox();
         JPanel namePanel = new JPanel();
-        JLabel nameLabel = new JLabel("Zadejte název knihy");
+        JLabel nameLabel = new JLabel("Zadejte nÃ¡zev knihy");
         nameField = new JTextField(12);
         namePanel.add(nameLabel);
         
@@ -69,15 +69,15 @@ public class SearchDialog extends JDialog {
                 Collection<VwTitul> titules = dbManager.searchTitles(criteria, 0);
                 if (titules.isEmpty()) {
                     JOptionPane.showMessageDialog(null, 
-                        "Vašemu kritériu neodpovídá žádný titul",
-                        "Žádný výsledek", JOptionPane.WARNING_MESSAGE);
+                        "VaÅ¡emu kritÃ©riu neodpovÃ­dÃ¡ Å¾Ã¡dnÃ½ titul",
+                        "Å½Ã¡dnÃ½ vÃ½sledek", JOptionPane.WARNING_MESSAGE);
                 } else {
                     String[] columnNames = {
-                        "Název",
+                        "NÃ¡zev",
                         "Autor",
-                        "Rok vydání",
-                        "Žánr",
-                        "Volné výtisky"
+                        "Rok vydÃ¡nÃ­",
+                        "Å½Ã¡nr",
+                        "VolnÃ© vÃ½tisky"
                     };
                     Object[][] data = new Object[titules.size()][];
                     int i = 0;
@@ -91,7 +91,7 @@ public class SearchDialog extends JDialog {
                         i++;
                     }
 
-                    TableDialog tableDialog = new TableDialog(user, "Výsledky hledání");
+                    TableDialog tableDialog = new TableDialog(user, "VÃ½sledky hledÃ¡nÃ­");
                     tableDialog.setTableFromResultSet(columnNames, data);
                     tableDialog.setVisible(true);
                     
@@ -102,7 +102,7 @@ public class SearchDialog extends JDialog {
 
         searchButton.addActionListener(listener);
         nameField.addActionListener(listener);
-        JButton closeButton = new JButton("Zavøít");
+        JButton closeButton = new JButton("ZavÅ™Ã­t");
         final JDialog parentDialog = this;
         closeButton.addActionListener(new ActionListener() {
             @Override

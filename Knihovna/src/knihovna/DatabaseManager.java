@@ -11,6 +11,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,6 +22,7 @@ import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwRezervace;
 import knihovna.entity.VwTitul;
 import knihovna.entity.VwVypujcka;
 import knihovna.entity.Vytisk;
@@ -33,10 +36,11 @@ public class DatabaseManager {
     private final EntityManager mEm;
     private final EntityManagerFactory mEmf;
     private static final int PAGE_SIZE = 10;
-    
+   
     private DatabaseManager() {
         mEmf = Persistence.createEntityManagerFactory("KnihovnaPU");
         mEm = mEmf.createEntityManager();
+        
     }
     
     public static void init() {
@@ -95,7 +99,24 @@ public class DatabaseManager {
             .setParameter(3, pageno*PAGE_SIZE)
             .getResultList();
     }
-
+    public void createUser(String name, String surname, String email) {
+       Uzivatel user = new Uzivatel(name, surname, email);
+        try {
+            user.setHeslo(md5("1"));
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(DatabaseManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(DatabaseManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        EntityTransaction transaction = mEm.getTransaction();
+        try {
+            transaction.begin();
+            mEm.persist(user);
+            transaction.commit();
+        } catch (PersistenceException ex) {
+            throw new EntityExistsException();
+        }
+    }
     public void createBorrowing(Vytisk print, Uzivatel user) {
         VwVypujcka borrowing = new VwVypujcka(print.getIdVytisk(), user.getIdUzivatel());
 
@@ -119,6 +140,11 @@ public class DatabaseManager {
             .setParameter("uzivatel", user.getIdUzivatel())
             .getResultList();
     }
+    public List<VwRezervace> getReservationsOfUser(Uzivatel user) {
+        return mEm.createNamedQuery("Rezervace.findByUser", VwRezervace.class)
+            .setParameter("uzivatel", user.getIdUzivatel())
+            .getResultList();
+    }
     
     private String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -132,5 +158,7 @@ public class DatabaseManager {
 
         return sb.toString();
     }
+
+    
     
 }
