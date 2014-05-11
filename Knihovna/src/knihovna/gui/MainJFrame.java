@@ -9,6 +9,10 @@ package knihovna.gui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
+import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
 
 /**
@@ -139,16 +144,24 @@ public class MainJFrame extends JFrame{
                             if( "".equals(oldPassword) || "".equals(newPassword) || "".equals(againPassword)){
                                 JOptionPane.showMessageDialog(null,"Vyplňte všechny údaje", "Chyba", JOptionPane.ERROR_MESSAGE);
                             }else{
-                                if(user.getHeslo().equals(oldPassword)){
-                                    if(newPassword.equals(againPassword)){
-                                        user.setHeslo(newPassword);
-                                        JOptionPane.showMessageDialog(null,"Heslo změněno", "Změna hesla", JOptionPane.PLAIN_MESSAGE);
+                                try {
+                                    if(user.getHeslo().equals(DatabaseManager.md5(oldPassword))){
+                                        if(newPassword.equals(againPassword)){
+                                            DatabaseManager dbManager = DatabaseManager.getInstance();
+                                            user.setHeslo(dbManager.md5(newPassword));
+                                            dbManager.commitTransactions();
+                                            JOptionPane.showMessageDialog(null,"Heslo změněno", "Změna hesla", JOptionPane.PLAIN_MESSAGE);
+                                        }else{
+                                            JOptionPane.showMessageDialog(null,"Nová hesla se neshodují", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                        }
                                     }else{
-                                        JOptionPane.showMessageDialog(null,"Nová hesla se neshodují", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                        JOptionPane.showMessageDialog(null,"Staré heslo je chybné", "Chyba", JOptionPane.ERROR_MESSAGE);
+                                        
                                     }
-                                }else{
-                                    JOptionPane.showMessageDialog(null,"Staré heslo je chybné", "Chyba", JOptionPane.ERROR_MESSAGE);
-                         
+                                } catch (NoSuchAlgorithmException ex) {
+                                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (UnsupportedEncodingException ex) {
+                                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 
                             }

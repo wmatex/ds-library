@@ -101,11 +101,9 @@ public class DatabaseManager {
     }
     public void createUser(String name, String surname, String email) {
        Uzivatel user = new Uzivatel(name, surname, email);
-        try {
+        try {//pro testovani se vytvari uzivatel s heslem 1
             user.setHeslo(md5("1"));
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(DatabaseManager.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedEncodingException ex) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
             Logger.getLogger(DatabaseManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         EntityTransaction transaction = mEm.getTransaction();
@@ -119,7 +117,6 @@ public class DatabaseManager {
     }
     public void createBorrowing(Vytisk print, Uzivatel user) {
         VwVypujcka borrowing = new VwVypujcka(print.getIdVytisk(), user.getIdUzivatel());
-
         EntityTransaction transaction = mEm.getTransaction();
         try {
             transaction.begin();
@@ -141,12 +138,28 @@ public class DatabaseManager {
             .getResultList();
     }
     public List<VwRezervace> getReservationsOfUser(Uzivatel user) {
-        return mEm.createNamedQuery("Rezervace.findByUser", VwRezervace.class)
+        return mEm.createNamedQuery("VwRezervace.findByUser", VwRezervace.class)
             .setParameter("uzivatel", user.getIdUzivatel())
             .getResultList();
     }
     
-    private String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public VwVypujcka getBorrowByVytisk(Vytisk print){
+        try{
+        return mEm.createNamedQuery("Vypujcka.findByVytisk", VwVypujcka.class)
+            .setParameter("id", print.getIdVytisk())
+            .getSingleResult();
+        }catch(NoResultException ex){
+            return null;
+        }
+        
+    }
+    public void commitTransactions(){
+        EntityTransaction transaction = mEm.getTransaction();
+        transaction.begin();
+        transaction.commit();
+    }
+    
+    public static String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(string.getBytes("UTF-8"));
         byte[] bytes = md.digest();

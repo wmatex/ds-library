@@ -10,10 +10,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwRezervace;
 
 /**
  *
@@ -22,6 +25,7 @@ import knihovna.entity.Uzivatel;
 public class NormalUserJPanel extends JPanel {
     Uzivatel user;
     MainJFrame mainFrame;
+    
     public NormalUserJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
         this.user = user;
@@ -34,10 +38,13 @@ public class NormalUserJPanel extends JPanel {
         
         JPanel menuJPanel = new JPanel();
         
-        JButton button = new JButton("Hledat knihu");
-        button.setPreferredSize(buttonsDim);
-        menuJPanel.add(button);
-        button.addActionListener(new ActionListener() {
+        JButton searchBookJButton = new JButton("Hledat knihu");
+        JButton reservationsJButton = new JButton("Správa rezervací");
+        reservationsJButton.setPreferredSize(buttonsDim);
+        searchBookJButton.setPreferredSize(buttonsDim);
+        menuJPanel.add(searchBookJButton);
+        menuJPanel.add(reservationsJButton);
+        searchBookJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 SearchDialog searchFrame = 
@@ -47,7 +54,14 @@ public class NormalUserJPanel extends JPanel {
             }
             
         });
-
+        reservationsJButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                 List<VwRezervace> reservations = dbManager.getReservationsOfUser(user);
+            }
+            
+        });
         add(menuJPanel, BorderLayout.CENTER);
     }
 

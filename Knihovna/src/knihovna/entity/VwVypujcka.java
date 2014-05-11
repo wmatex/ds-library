@@ -28,6 +28,11 @@ import javax.persistence.TemporalType;
         name="Vypujcka.findByUser",
         query="SELECT v FROM VwVypujcka v WHERE v.idUzivatel = :uzivatel"
             + " AND v.jeVraceno = false"
+    ),
+    @NamedQuery(
+        name="Vypujcka.findByVytisk",
+        query="SELECT v FROM VwVypujcka v WHERE v.idVytisk = :id"
+            + " AND v.jeVraceno = false"
     )
 })
 public class VwVypujcka implements Serializable {

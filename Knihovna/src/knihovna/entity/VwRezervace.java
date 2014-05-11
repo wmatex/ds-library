@@ -25,7 +25,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @Table(name = "vw_rezervace")
 @NamedQueries({
-    @NamedQuery(name = "VwRezervace.findAll", query = "SELECT v FROM VwRezervace v")})
+    @NamedQuery(
+            name = "VwRezervace.findByUser", 
+            query = "SELECT v FROM VwRezervace v WHERE v.idUzivatel = :uzivatel")
+})
 public class VwRezervace implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "id_uzivatel")
