@@ -11,8 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,7 +18,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
-import javax.persistence.RollbackException;
+import javax.persistence.StoredProcedureQuery;
 import knihovna.entity.Uzivatel;
 import knihovna.entity.VwRezervace;
 import knihovna.entity.VwTitul;
@@ -35,7 +33,7 @@ public class DatabaseManager {
     private static DatabaseManager mInstance = null;
     private final EntityManager mEm;
     private final EntityManagerFactory mEmf;
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
    
     private DatabaseManager() {
         mEmf = Persistence.createEntityManagerFactory("KnihovnaPU");
@@ -92,29 +90,43 @@ public class DatabaseManager {
         }
     }
 
-    public Collection<VwTitul> searchTitles(String name, int pageno) {
+    public Collection<VwTitul> searchTitles(String criteria, int pageno) {
+        criteria = criteria.trim();
+        criteria = criteria.replaceAll("\\s+", "|");
         return mEm.createNamedQuery("VwTitul.searchForTitul", VwTitul.class)
-            .setParameter(1, name)
-            .setParameter(2, PAGE_SIZE)
-            .setParameter(3, pageno*PAGE_SIZE)
+            .setParameter(1, criteria)
+            .setParameter(2, criteria)
+            .setParameter(3, PAGE_SIZE)
+            .setParameter(4, pageno*PAGE_SIZE)
             .getResultList();
     }
-    public void createUser(String name, String surname, String email) {
-       Uzivatel user = new Uzivatel(name, surname, email);
-        try {//pro testovani se vytvari uzivatel s heslem 1
-            user.setHeslo(md5("1"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            Logger.getLogger(DatabaseManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        EntityTransaction transaction = mEm.getTransaction();
+
+    public String createUser(String name, String surname, String email) {
+        StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("Uzivatel.novy");
+        query.setParameter("_jmeno", name);
+        query.setParameter("_prijmeni", surname);
+        query.setParameter("_email", email);
+
+        String password = null;
         try {
-            transaction.begin();
-            mEm.persist(user);
-            transaction.commit();
-        } catch (PersistenceException ex) {
+            query.execute();
+            password = (String) query.getOutputParameterValue(4);
+        } catch (PersistenceException e) {
+            System.out.println(e.getMessage());
             throw new EntityExistsException();
         }
+        return password;
     }
+
+    public void createReservation(Uzivatel user, VwTitul title) {
+        StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("VwRezervace.nova");
+        query.setParameter("_id_uzivatel", user.getIdUzivatel());
+        query.setParameter("_id_titul", title.getIdTitul());
+        query.setParameter("_interval", null);
+
+        query.execute();
+    }
+
     public void createBorrowing(Vytisk print, Uzivatel user) {
         VwVypujcka borrowing = new VwVypujcka(print.getIdVytisk(), user.getIdUzivatel());
         EntityTransaction transaction = mEm.getTransaction();
@@ -127,6 +139,14 @@ public class DatabaseManager {
         }
     }
 
+    public void returnBorrowing(VwVypujcka borrowing) {
+        EntityTransaction transaction = mEm.getTransaction();
+        transaction.begin();
+        borrowing.setJeVraceno(true);
+        mEm.persist(borrowing);
+        transaction.commit();
+    }
+
     public List<Uzivatel> getUsers() {
         return mEm.createNamedQuery("Uzivatel.getAll", Uzivatel.class)
             .getResultList();
@@ -137,26 +157,23 @@ public class DatabaseManager {
             .setParameter("uzivatel", user.getIdUzivatel())
             .getResultList();
     }
-    public List<VwRezervace> getReservationsOfUser(Uzivatel user) {
+    public List<VwRezervace> getReservationsOfUser(Uzivatel user, int pageno) {
         return mEm.createNamedQuery("VwRezervace.findByUser", VwRezervace.class)
-            .setParameter("uzivatel", user.getIdUzivatel())
+            .setParameter(1, user.getIdUzivatel())
+            .setParameter(2, PAGE_SIZE)
+            .setParameter(3, pageno*PAGE_SIZE)
             .getResultList();
     }
     
     public VwVypujcka getBorrowByVytisk(Vytisk print){
-        try{
-        return mEm.createNamedQuery("Vypujcka.findByVytisk", VwVypujcka.class)
-            .setParameter("id", print.getIdVytisk())
-            .getSingleResult();
-        }catch(NoResultException ex){
+        try {
+            return mEm.createNamedQuery("Vypujcka.findByVytisk", VwVypujcka.class)
+                .setParameter("id", print.getIdVytisk())
+                .getSingleResult();
+        } catch (NoResultException ex){
             return null;
         }
         
-    }
-    public void commitTransactions(){
-        EntityTransaction transaction = mEm.getTransaction();
-        transaction.begin();
-        transaction.commit();
     }
     
     public static String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {

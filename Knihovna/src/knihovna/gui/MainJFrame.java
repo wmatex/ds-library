@@ -11,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -23,6 +26,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
+import knihovna.entity.VwRezervace;
+import knihovna.gui.TableDialog.ResultFetcher;
 
 /**
  *
@@ -149,7 +154,6 @@ public class MainJFrame extends JFrame{
                                         if(newPassword.equals(againPassword)){
                                             DatabaseManager dbManager = DatabaseManager.getInstance();
                                             user.setHeslo(dbManager.md5(newPassword));
-                                            dbManager.commitTransactions();
                                             JOptionPane.showMessageDialog(null,"Heslo změněno", "Změna hesla", JOptionPane.PLAIN_MESSAGE);
                                         }else{
                                             JOptionPane.showMessageDialog(null,"Nová hesla se neshodují", "Chyba", JOptionPane.ERROR_MESSAGE);
@@ -175,6 +179,58 @@ public class MainJFrame extends JFrame{
             }
             
         });
+    }
+
+    public static void showReservationDialog(Uzivatel user) {
+        ResultFetcher fetcher = new ResultFetcher() {
+            @Override
+            public Object[][] getResults(int pageno) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                List<VwRezervace> reservations = dbManager.getReservationsOfUser(user, pageno);
+                if (reservations.isEmpty()) {
+                    return null;
+                }
+                
+                Object[][] data = new Object[reservations.size()][];
+                int i = 0;
+                for (VwRezervace row : reservations) {
+                    data[i] = new Object[5];
+                    data[i][0] = row.getNazev();
+                    data[i][1] = row.getPoradi();
+                    SimpleDateFormat ft1
+                        = new SimpleDateFormat("d.M.y");
+                    data[i][2] = ft1.format(row.getZajemDo());
+                    data[i][3] = row.getSplnena();
+                    Date expiration = row.getVyprsi();
+                    if (expiration != null) {
+                        SimpleDateFormat ft2
+                            = new SimpleDateFormat("E d.M.y");
+                        data[i][4] = ft2.format(expiration);
+                    }
+                    
+                    i++;
+                }
+                return data;
+            }
+        };
+        Object[][] initial = fetcher.getResults(0);
+        if (initial == null) {
+            JOptionPane.showMessageDialog(null,
+                "Uživatel nemá žádné rezervace",
+                "Žádné rezervace", JOptionPane.WARNING_MESSAGE);
+        } else {
+            String[] columnNames = {
+                "Název",
+                "Pořadí",
+                "Zájem do",
+                "Splněna",
+                "Vyprší"
+            };
+            TableDialog tableDialog = new TableDialog(user, "Rezervace", fetcher);
+            tableDialog.setInitial(columnNames, initial);
+            tableDialog.setVisible(true);
+        }
+        
     }
     
 

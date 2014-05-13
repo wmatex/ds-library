@@ -8,6 +8,7 @@ package knihovna.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,6 +16,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -30,9 +32,16 @@ import knihovna.entity.Uzivatel;
  */
 public class TableDialog extends JDialog {
     private final Uzivatel user;
-    public TableDialog(Uzivatel user, String title) {
+    private int pageno = 0;
+    private String[] columnNames;
+    private ResultFetcher fetcher;
+    private Dimension windowDimension;
+    private JPanel panel = null;
+
+    public TableDialog(Uzivatel user, String title, ResultFetcher fetcher) {
         super((JDialog)null);
         this.user = user;
+        this.fetcher = fetcher;
         init(title);
     }
     
@@ -48,16 +57,48 @@ public class TableDialog extends JDialog {
                 dialog.dispose();
             }
         });
+
+        final JButton prevButton = new JButton("Předchozí");
+        prevButton.setEnabled(false);
+        prevButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                pageno--;
+                createPanel(fetcher.getResults(pageno));
+                if (pageno < 1) {
+                    prevButton.setEnabled(false);
+                }
+            }
+        });
+        final JButton nextButton = new JButton("Další");
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                Object[][] resultList = fetcher.getResults(pageno+1);
+                if (resultList != null) {
+                    pageno++;
+                    prevButton.setEnabled(true);
+                    createPanel(resultList);
+                }
+            }
+        });
         JPanel panel = new JPanel();
+        panel.add(prevButton);
+        panel.add(nextButton);
         panel.add(closeButton);
         add(panel, BorderLayout.SOUTH);
     }
-    
-    public void setTableFromResultSet(String[] columnNames, Object[][] data) {
-        JPanel panel = new JPanel(new GridBagLayout());
+
+    private void createPanel(Object[][] data) {
+        if (data.length == 0) return;
+        GridBagLayout layout = new GridBagLayout();
+        if (panel != null) {
+            this.remove(panel);
+        }
+        panel = new JPanel(layout);
         GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(5,5,5,5);
         c.gridy = 0;
         int x = 0;
@@ -80,7 +121,7 @@ public class TableDialog extends JDialog {
                     box.setSelected((Boolean) o);
                     box.setEnabled(false);
                     panel.add(box, c);
-                } else {
+                } else if (o != null) {
                     JLabel l = new JLabel(o.toString());
                     l.setFont(font);
                     panel.add(l, c);
@@ -89,10 +130,34 @@ public class TableDialog extends JDialog {
             }
             y++;
         }
+
         
+        layout.layoutContainer(panel);
+        double[][] weights = layout.getLayoutWeights();
+        for (int i = 0; i < weights.length; i++) {
+            for (int j = 0; j < weights[i].length; j++) {
+                weights[i][j] = 1;
+            }
+        }
+        layout.columnWeights = weights[0];
+        layout.rowWeights = weights[1];
         panel.setBorder(new EmptyBorder(10,10,10,10));
         add(panel, BorderLayout.CENTER);
+        revalidate();
+    }
+    
+    public void setInitial(String[] columnNames, Object[][] data) {
+        this.columnNames = columnNames;
+        createPanel(data);
         pack();
         setLocationRelativeTo(null);
+    }
+
+    public ResultFetcher getFetcher() {
+        return fetcher;
+    }
+
+    public interface ResultFetcher {
+        Object[][] getResults(int pageno);
     }
 }

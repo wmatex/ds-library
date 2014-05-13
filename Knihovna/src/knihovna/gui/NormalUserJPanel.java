@@ -10,13 +10,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
-import knihovna.entity.VwRezervace;
 
 /**
  *
@@ -57,8 +53,7 @@ public class NormalUserJPanel extends JPanel {
         reservationsJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                DatabaseManager dbManager = DatabaseManager.getInstance();
-                 List<VwRezervace> reservations = dbManager.getReservationsOfUser(user);
+                MainJFrame.showReservationDialog(user);
             }
             
         });

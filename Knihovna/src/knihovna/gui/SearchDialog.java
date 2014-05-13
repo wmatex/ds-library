@@ -11,6 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import javax.persistence.PersistenceException;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -23,6 +24,7 @@ import knihovna.DatabaseManager;
 import knihovna.entity.Autor;
 import knihovna.entity.Uzivatel;
 import knihovna.entity.VwTitul;
+import knihovna.gui.TableDialog.ResultFetcher;
 
 /**
  *
@@ -33,6 +35,29 @@ public class SearchDialog extends JDialog {
     private JPanel searchPanel;
     private JPanel buttonPanel;
     private JTextField nameField;
+
+    private class ReservationButtonListener implements ActionListener {
+        private Uzivatel user;
+        private VwTitul title;
+
+        public ReservationButtonListener(Uzivatel user, VwTitul title) {
+            this.user = user;
+            this.title = title;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            DatabaseManager dbManager = DatabaseManager.getInstance();
+            try {
+                dbManager.createReservation(user, title);
+                JOptionPane.showMessageDialog(null, "Rezervace vytvořena",
+                   "" , JOptionPane.INFORMATION_MESSAGE);
+            } catch (PersistenceException e) {
+                JOptionPane.showMessageDialog(null, "Tento titul již máte rezervovaný", 
+                    "Chyba", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
 
     public SearchDialog(JFrame parent, Uzivatel user, String title) {
         super(parent);
@@ -49,7 +74,7 @@ public class SearchDialog extends JDialog {
         searchPanel = new JPanel(new BorderLayout(10, 10));
         Box hbox = Box.createHorizontalBox();
         JPanel namePanel = new JPanel();
-        JLabel nameLabel = new JLabel("Zadejte název knihy");
+        JLabel nameLabel = new JLabel("Zadejte název a/nebo autora knihy");
         nameField = new JTextField(12);
         namePanel.add(nameLabel);
         
@@ -64,40 +89,60 @@ public class SearchDialog extends JDialog {
         ActionListener listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                DatabaseManager dbManager = DatabaseManager.getInstance();
-                String criteria = nameField.getText();
-                Collection<VwTitul> titules = dbManager.searchTitles(criteria, 0);
-                if (titules.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, 
-                        "Vašemu kritériu neodpovídá žádný titul",
-                        "Žádný výsledek", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    String[] columnNames = {
-                        "Název",
-                        "Autor",
-                        "Rok vydání",
-                        "Žánr",
-                        "Volné výtisky"
-                    };
-                    Object[][] data = new Object[titules.size()][];
-                    int i = 0;
-                    for (VwTitul row: titules) {
-                        data[i] = new Object[5];
-                        data[i][0] = row.getNazev();
-                        data[i][1] = generateAutorString(row);
-                        data[i][2] = row.getRokVydani();
-                        data[i][3] = row.getZanr();
-                        data[i][4] = row.getVolneVytisky();
-                        i++;
+                final String criteria = nameField.getText();
+                ResultFetcher fetcher = new ResultFetcher() {
+                    @Override
+                    public Object[][] getResults(int pageno) {
+                        DatabaseManager dbManager = DatabaseManager.getInstance();
+                        Collection<VwTitul> titules = dbManager.searchTitles(criteria, pageno);
+                        if (titules.isEmpty()) {
+                            return null;
+                        }
+                        Object[][] data = new Object[titules.size()][];
+                        int i = 0;
+                        for (VwTitul row: titules) {
+                            data[i] = new Object[6];
+                            data[i][0] = row.getNazev();
+                            data[i][1] = generateAutorString(row);
+                            data[i][2] = row.getRokVydani();
+                            data[i][3] = row.getZanr();
+                            data[i][4] = row.getVolneVytisky();
+                            
+                            JButton button = new JButton("Vytvořit rezervaci");
+                            button.addActionListener(new ReservationButtonListener(user, row));
+                            data[i][5] = button;
+                            i++;
+                        }
+                        return data;
                     }
-
-                    TableDialog tableDialog = new TableDialog(user, "Výsledky hledání");
-                    tableDialog.setTableFromResultSet(columnNames, data);
-                    tableDialog.setVisible(true);
-                    
+                };
+                try {
+                    Object[][] data = fetcher.getResults(0);
+                    if (data == null) {
+                        JOptionPane.showMessageDialog(null,
+                            "Vašemu kritériu neodpovídá žádný titul",
+                            "Žádný výsledek", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        String[] columnNames = {
+                            "Název",
+                            "Autor",
+                            "Rok vydání",
+                            "Žánr",
+                            "Volné výtisky",
+                            ""
+                        };
+                        
+                        TableDialog tableDialog = new TableDialog(user, "Výsledky hledání",
+                            fetcher
+                        );
+                        tableDialog.setInitial(columnNames, data);
+                        tableDialog.setVisible(true);
+                    }
+                } catch(PersistenceException e) {
+                    JOptionPane.showMessageDialog(null, "Dotaz obsahuje nepovolené znaky", 
+                        "Chyba", JOptionPane.ERROR_MESSAGE);
                 }
             }
-            
         };
 
         searchButton.addActionListener(listener);

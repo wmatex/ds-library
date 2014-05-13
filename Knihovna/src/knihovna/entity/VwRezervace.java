@@ -11,12 +11,14 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedStoredProcedureQuery;
+import static javax.persistence.ParameterMode.IN;
+import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
@@ -24,19 +26,34 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Table(name = "vw_rezervace")
-@NamedQueries({
-    @NamedQuery(
-            name = "VwRezervace.findByUser", 
-            query = "SELECT v FROM VwRezervace v WHERE v.idUzivatel = :uzivatel")
+@NamedNativeQueries({
+    @NamedNativeQuery(
+        resultClass=VwRezervace.class,
+        name = "VwRezervace.findByUser",
+        query = "SELECT v.* FROM vw_rezervace v "
+            + "WHERE v.id_uzivatel = ? "
+            + "LIMIT ? OFFSET ?"
+    )
 })
+@NamedStoredProcedureQuery(
+    name = "VwRezervace.nova",
+    procedureName = "vytvor_rezervaci",
+    parameters = {
+        @StoredProcedureParameter(mode=IN, name="_id_uzivatel", type=Integer.class),
+        @StoredProcedureParameter(mode=IN, name="_id_titul", type=Integer.class),
+        @StoredProcedureParameter(mode=IN, name="_interval", type=String.class)
+    }
+)
 public class VwRezervace implements Serializable {
     private static final long serialVersionUID = 1L;
+    @Id
     @Column(name = "id_uzivatel")
     private Integer idUzivatel;
     @Column(name = "krestni_jmeno")
     private String krestniJmeno;
     private String prijmeni;
     private String email;
+    @Id
     @Column(name = "id_titul")
     private Integer idTitul;
     private String nazev;
@@ -47,8 +64,6 @@ public class VwRezervace implements Serializable {
     @Column(name = "zajem_do")
     @Temporal(TemporalType.DATE)
     private Date zajemDo;
-    @Id
-    private Long id;
 
     public VwRezervace() {
     }
@@ -100,13 +115,4 @@ public class VwRezervace implements Serializable {
     public void setZajemDo(Date zajemDo) {
         this.zajemDo = zajemDo;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
 }

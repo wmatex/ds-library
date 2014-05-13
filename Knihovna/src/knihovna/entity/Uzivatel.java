@@ -15,6 +15,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQuery;
+import static javax.persistence.ParameterMode.IN;
+import static javax.persistence.ParameterMode.OUT;
+import javax.persistence.StoredProcedureParameter;
 
 /**
  *
@@ -35,6 +39,17 @@ import javax.persistence.NamedQuery;
         query="SELECT u FROM Uzivatel u ORDER BY u.prijmeni ASC, u.krestniJmeno ASC"
     )
 })
+@NamedStoredProcedureQuery(
+    name = "Uzivatel.novy",
+    resultClasses = String.class,
+    procedureName = "novy_uzivatel",
+    parameters = {
+        @StoredProcedureParameter(mode=IN, name="_jmeno", type=String.class),
+        @StoredProcedureParameter(mode=IN, name="_prijmeni", type=String.class),
+        @StoredProcedureParameter(mode=IN, name="_email", type=String.class),
+        @StoredProcedureParameter(mode=OUT, name="_heslo", type=String.class)
+    }
+)
 public class Uzivatel implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

@@ -31,7 +31,10 @@ import javax.persistence.Table;
     @NamedNativeQuery(
         name="VwTitul.searchForTitul",
         query="SELECT t.* FROM vw_titul t "
-            + "WHERE t.nazev ~* ? LIMIT ? OFFSET ?",
+            + "INNER JOIN titul_fulltext f ON t.id_titul = f.id_titul "
+            + "WHERE f.document @@ to_tsquery('simple', ?) "
+            + "ORDER BY ts_rank(f.document, to_tsquery('simple', ?)) DESC "
+            + "LIMIT ? OFFSET ?",
         resultClass=VwTitul.class
     )
 })
@@ -46,7 +49,6 @@ public class VwTitul implements Serializable {
     private Short rokVydani;
     @Column(name = "vypujcni_doba_dny")
     private Short vypujcniDobaDny;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     private BigDecimal cena;
     private String zanr;
     @Column(name = "volne_vytisky")

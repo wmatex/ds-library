@@ -23,6 +23,7 @@ public class Knihovna {
         try {
         DatabaseManager.init();
         } catch (PersistenceException ex) {
+            System.out.println(ex.getMessage());
             JOptionPane.showMessageDialog(null, "Nemohu se připojit k databázi, zkontrolujte připojení", 
                 "Chyba", JOptionPane.ERROR_MESSAGE);
             System.exit(1);

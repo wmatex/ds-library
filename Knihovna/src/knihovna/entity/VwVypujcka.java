@@ -10,9 +10,12 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -50,6 +53,8 @@ public class VwVypujcka implements Serializable {
     private String nazev;
     @Column(name = "id_vypujcka")
     @Id
+    @GeneratedValue(strategy=GenerationType.AUTO, generator="vypujcka_generator")
+    @SequenceGenerator(name="vypujcka_generator", sequenceName="seq_vypujcka", allocationSize=1, initialValue=1)
     private Integer idVypujcka;
     @Column(name = "datum_pujceni")
     @Temporal(TemporalType.DATE)
