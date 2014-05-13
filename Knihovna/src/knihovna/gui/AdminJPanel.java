@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityExistsException;
@@ -41,6 +42,7 @@ public class AdminJPanel extends JPanel {
     private JButton reservationsJButton;
     private JButton newUserJButton;
     private JButton borrowsJButton;
+    private JButton waitingReservations;
 
     public AdminJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -58,11 +60,13 @@ public class AdminJPanel extends JPanel {
         reservationsJButton = new JButton("Správa rezervací");
         newUserJButton = new JButton("Nový uživatel");
         borrowsJButton = new JButton("Výpujčky");
+        waitingReservations = new JButton("Čekající rezervace");
 
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
         newUserJButton.setPreferredSize(buttonsDim);
         borrowsJButton.setPreferredSize(buttonsDim);
+        waitingReservations.setPreferredSize(buttonsDim);
 
         newBorrowingJButton.addActionListener(new ActionListener() {
             @Override
@@ -118,7 +122,8 @@ public class AdminJPanel extends JPanel {
                                 dbManager.returnBorrowing(borrow);
                                 int delay = (int) ((new Date().getTime() - borrow.getDatumVraceni().getTime()) / (1000 * 60 * 60 * 24));
                                 if (delay > 0) {
-                                    JOptionPane.showMessageDialog(null, "Výtisk " + borrow.getNazev() + " byl vrácen pozdě\nSpozdné činí: " + delay * 5 + "Kč",
+                                    JOptionPane.showMessageDialog(null, 
+                                        "Výtisk " + borrow.getNazev() + " byl vrácen pozdě\nSpozdné činí: " + delay * 5 + "Kč",
                                         "Spozdné", JOptionPane.WARNING_MESSAGE);
                                 } else {
                                     JOptionPane.showMessageDialog(null, "Výtisk " + borrow.getNazev() + " byl vrácen v pořádku",
@@ -221,10 +226,51 @@ public class AdminJPanel extends JPanel {
             }
 
         });
+
+        waitingReservations.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ResultFetcher fetcher = new ResultFetcher() {
+                    @Override
+                    public Object[][] getResults(int pageno) {
+                        DatabaseManager dbManager = DatabaseManager.getInstance();
+                        Collection<VwRezervace> reservations = dbManager.getWaitingRezervations(pageno);
+                        if (reservations.isEmpty()) return null;
+
+                        int i = 0;
+                        Object[][] data = new Object[reservations.size()][];
+                        for (VwRezervace row: reservations) {
+                            data[i] = new Object[3];
+                            String name = row.getKrestniJmeno() + " " + row.getPrijmeni();
+                            data[i][0] = name;
+                            data[i][1] = row.getNazev();
+                            data[i][2] = new JButton("Splnit rezervaci");
+                            i++;
+                        }
+                        return data;
+                    }
+                };
+                Object[][] initial = fetcher.getResults(0);
+                if (initial == null) {
+                    JOptionPane.showMessageDialog(null, "Žádné čekající rezervace", 
+                        "", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    String[] columnNames = {
+                        "Čtenář",
+                        "Titul",
+                        ""
+                    };
+                    TableDialog dialog = new TableDialog(null, "Rezervace čekající na vyřízení", fetcher);
+                    dialog.setInitial(columnNames, initial);
+                    dialog.setVisible(true);
+                }
+            }
+        });
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
         menuJPanel.add(newUserJButton);
         menuJPanel.add(borrowsJButton);
+        menuJPanel.add(waitingReservations);
 
         add(menuJPanel, BorderLayout.CENTER);
     }

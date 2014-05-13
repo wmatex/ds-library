@@ -13,6 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.NamedStoredProcedureQuery;
 import static javax.persistence.ParameterMode.IN;
 import javax.persistence.StoredProcedureParameter;
@@ -33,6 +35,15 @@ import javax.persistence.TemporalType;
         query = "SELECT v.* FROM vw_rezervace v "
             + "WHERE v.id_uzivatel = ? "
             + "LIMIT ? OFFSET ?"
+    ),
+    @NamedNativeQuery(
+        name="VwRezervace.findWaiting",
+        query = "SELECT v.* FROM vw_rezervace v "
+            + "INNER JOIN vw_titul t ON v.id_titul = t.id_titul "
+            + "WHERE v.splnena = FALSE AND t.volne_vytisky > 0 AND v.poradi = 1 "
+            + "ORDER BY v.vytvorena ASC "
+            + "LIMIT ? OFFSET ?",
+        resultClass=VwRezervace.class
     )
 })
 @NamedStoredProcedureQuery(

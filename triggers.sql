@@ -118,12 +118,13 @@ GROUP BY a.id_uzivatel, a.id_titul;
 
 CREATE OR REPLACE VIEW vw_rezervace AS
 SELECT r.id_uzivatel, u.krestni_jmeno, u.prijmeni, u.email, r.id_titul, t.nazev,
-p.poradi, r.splnena, r.vyprsi, r.zajem_do
+p.poradi, r.splnena, r.vyprsi, r.zajem_do, e.poradi as vytvorena
 FROM vw_rezervace_id r
 INNER JOIN uzivatel u ON r.id_uzivatel = u.id_uzivatel
 INNER JOIN titul t    ON r.id_titul    = t.id_titul
 INNER JOIN vw_rezervace_poradi p ON p.id_uzivatel = r.id_uzivatel AND p.id_titul = r.id_titul
-ORDER BY r.splnena DESC, r.poradi ASC;
+INNER JOIN rezervace e ON e.id_uzivatel = r.id_uzivatel AND e.id_titul = r.id_titul
+ORDER BY r.splnena DESC, vytvorena ASC;
 
 CREATE OR REPLACE RULE vw_rezervace_update AS ON UPDATE TO vw_rezervace
 DO INSTEAD (

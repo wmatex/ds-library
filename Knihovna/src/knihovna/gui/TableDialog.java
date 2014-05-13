@@ -107,7 +107,7 @@ public class TableDialog extends JDialog {
             panel.add(new JLabel("<html><i>"+name+"</i></html>"), c);
         }
         
-        Font font = new Font("Serif", Font.PLAIN, 11);
+        Font font = new Font("Serif", Font.PLAIN, 12);
         int y = 1;
         for (Object[] row: data) {
             x = 0;

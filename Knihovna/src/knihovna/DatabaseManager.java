@@ -147,6 +147,13 @@ public class DatabaseManager {
         transaction.commit();
     }
 
+    public List<VwRezervace> getWaitingRezervations(int pageno) {
+        return mEm.createNamedQuery("VwRezervace.findWaiting", VwRezervace.class)
+            .setParameter(1, PAGE_SIZE)
+            .setParameter(2, pageno*PAGE_SIZE)
+            .getResultList();
+    }
+
     public List<Uzivatel> getUsers() {
         return mEm.createNamedQuery("Uzivatel.getAll", Uzivatel.class)
             .getResultList();
