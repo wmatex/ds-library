@@ -36,10 +36,13 @@ public class NormalUserJPanel extends JPanel {
         
         JButton searchBookJButton = new JButton("Hledat knihu");
         JButton reservationsJButton = new JButton("Správa rezervací");
+        JButton borrowsJButton = new JButton("Výpůjčky");
         reservationsJButton.setPreferredSize(buttonsDim);
         searchBookJButton.setPreferredSize(buttonsDim);
+        borrowsJButton.setPreferredSize(buttonsDim);
         menuJPanel.add(searchBookJButton);
         menuJPanel.add(reservationsJButton);
+        menuJPanel.add(borrowsJButton);
         searchBookJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -54,6 +57,13 @@ public class NormalUserJPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 MainJFrame.showReservationDialog(user);
+            }
+            
+        });
+        borrowsJButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MainJFrame.showBorrowDialog(user);
             }
             
         });

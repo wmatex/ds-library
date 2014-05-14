@@ -27,6 +27,7 @@ import javax.swing.JTabbedPane;
 import knihovna.DatabaseManager;
 import knihovna.entity.Uzivatel;
 import knihovna.entity.VwRezervace;
+import knihovna.entity.VwVypujcka;
 import knihovna.gui.TableDialog.ResultFetcher;
 
 /**
@@ -233,6 +234,77 @@ public class MainJFrame extends JFrame{
         
     }
     
+    public static void showBorrowDialog(Uzivatel user) {
+        ResultFetcher fetcher = new ResultFetcher() {
+            @Override
+            public Object[][] getResults(int pageno) {
+                DatabaseManager dbManager = DatabaseManager.getInstance();
+                List<VwVypujcka> borrows = dbManager.getBorrowsOfUser(user, pageno);
+                if (borrows.isEmpty()) {
+                    return null;
+                }
+                
+                Object[][] data = new Object[borrows.size()][];
+                int i = 0;
+                for (VwVypujcka row : borrows) {
+                    Date now    = new Date();
+                    Date ret    = row.getDatumVraceni();
+                    int diffInDays = (int)Math.ceil((ret.getTime() - now.getTime()) 
+                        / (1000 * 60 * 60 * 24.0));
+                    data[i] = new Object[4];
+                    data[i][0] = row.getNazev();
+                    SimpleDateFormat ft1
+                        = new SimpleDateFormat("d.M.y");
+                    data[i][1] = ft1.format(row.getDatumPujceni());
+                    SimpleDateFormat ft2
+                        = new SimpleDateFormat("E d.M.y");
+                    String retDate = ft2.format(ret);
+                    String message = "";
+                    if (diffInDays <= 0) {
+                        message = "<html><b>" + retDate + " (";
+                        String s = "";
+                        if (diffInDays == 0) {
+                            s = "dnes";
+                        } else if (diffInDays == -1) {
+                            s = "včera";
+                        } else {
+                            s = "před " + (diffInDays*(-1)) + " dny";
+                        }
+                        message += s + ")</b></html>";
+                    } else {
+                        message = retDate + " (";
+                        String s = "";
+                        if (diffInDays == 1) {
+                            s = "zítra";
+                        } else {
+                            s = "za " + diffInDays + " dní";
+                        }
+                        message += s + ")";
+                    }
+                    data[i][2] = message;
+                    
+                    i++;
+                }
+                return data;
+            }
+        };
+        Object[][] initial = fetcher.getResults(0);
+        if (initial == null) {
+            JOptionPane.showMessageDialog(null,
+                "Nemáte žádné výpůjčky",
+                "Žádné výpůjčky", JOptionPane.WARNING_MESSAGE);
+        } else {
+            String[] columnNames = {
+                "Titul",
+                "Půjčeno",
+                "Vrátit do"
+            };
+            TableDialog tableDialog = new TableDialog(user, "Výpůjčky", fetcher);
+            tableDialog.setInitial(columnNames, initial);
+            tableDialog.setVisible(true);
+        }
+        
+    }
 
 }
 

@@ -31,9 +31,9 @@ import javax.persistence.Table;
     @NamedNativeQuery(
         name="VwTitul.searchForTitul",
         query="SELECT t.* FROM vw_titul t "
-            + "INNER JOIN titul_fulltext f ON t.id_titul = f.id_titul "
-            + "WHERE f.document @@ to_tsquery('simple', ?) "
-            + "ORDER BY ts_rank(f.document, to_tsquery('simple', ?)) DESC "
+            + "INNER JOIN titul f ON t.id_titul = f.id_titul "
+            + "WHERE f.fulltext @@ to_tsquery('simple', ?) "
+            + "ORDER BY ts_rank(f.fulltext, to_tsquery('simple', ?)) DESC "
             + "LIMIT ? OFFSET ?",
         resultClass=VwTitul.class
     )

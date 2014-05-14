@@ -15,6 +15,7 @@ import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQueries;
 import javax.persistence.NamedStoredProcedureQuery;
 import static javax.persistence.ParameterMode.IN;
 import javax.persistence.StoredProcedureParameter;
@@ -46,15 +47,24 @@ import javax.persistence.TemporalType;
         resultClass=VwRezervace.class
     )
 })
-@NamedStoredProcedureQuery(
-    name = "VwRezervace.nova",
-    procedureName = "vytvor_rezervaci",
-    parameters = {
-        @StoredProcedureParameter(mode=IN, name="_id_uzivatel", type=Integer.class),
-        @StoredProcedureParameter(mode=IN, name="_id_titul", type=Integer.class),
-        @StoredProcedureParameter(mode=IN, name="_interval", type=String.class)
-    }
-)
+@NamedStoredProcedureQueries({
+    @NamedStoredProcedureQuery(
+        name = "VwRezervace.nova",
+        procedureName = "vytvor_rezervaci",
+        parameters = {
+            @StoredProcedureParameter(mode=IN, name="_id_uzivatel", type=Integer.class),
+            @StoredProcedureParameter(mode=IN, name="_id_titul", type=Integer.class),
+            @StoredProcedureParameter(mode=IN, name="_interval", type=String.class)
+        }
+    ),
+    @NamedStoredProcedureQuery(
+        name="VwRezervace.spln_rezervaci",
+        procedureName = "spln_rezervaci",
+        parameters = {
+            @StoredProcedureParameter(mode=IN, name="_id_titul", type=Integer.class)
+        }
+    )
+})
 public class VwRezervace implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

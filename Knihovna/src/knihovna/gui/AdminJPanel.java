@@ -41,8 +41,9 @@ public class AdminJPanel extends JPanel {
     private JButton newBorrowingJButton;
     private JButton reservationsJButton;
     private JButton newUserJButton;
-    private JButton borrowsJButton;
+    private JButton returnButton;
     private JButton waitingReservations;
+    private JButton borrowsButton;
 
     public AdminJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -58,14 +59,16 @@ public class AdminJPanel extends JPanel {
 
         newBorrowingJButton = new JButton("Nová výpůjčka");
         reservationsJButton = new JButton("Správa rezervací");
-        newUserJButton = new JButton("Nový uživatel");
-        borrowsJButton = new JButton("Výpujčky");
+        borrowsButton       = new JButton("Správa výpůjček");
+        newUserJButton      = new JButton("Nový uživatel");
+        returnButton        = new JButton("Vrátit knihu");
         waitingReservations = new JButton("Čekající rezervace");
 
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
         newUserJButton.setPreferredSize(buttonsDim);
-        borrowsJButton.setPreferredSize(buttonsDim);
+        returnButton.setPreferredSize(buttonsDim);
+        borrowsButton.setPreferredSize(buttonsDim);
         waitingReservations.setPreferredSize(buttonsDim);
 
         newBorrowingJButton.addActionListener(new ActionListener() {
@@ -86,7 +89,7 @@ public class AdminJPanel extends JPanel {
             }
         });
 
-        borrowsJButton.addActionListener(new ActionListener() {
+        returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 JPanel panel = new JPanel();
@@ -119,8 +122,9 @@ public class AdminJPanel extends JPanel {
                                     "Chyba", JOptionPane.ERROR_MESSAGE);
 
                             } else {
+                                System.out.println(borrow.toString());
                                 dbManager.returnBorrowing(borrow);
-                                int delay = (int) ((new Date().getTime() - borrow.getDatumVraceni().getTime()) / (1000 * 60 * 60 * 24));
+                                int delay = (int) Math.ceil((new Date().getTime() - borrow.getDatumVraceni().getTime()) / (1000 * 60 * 60 * 24));
                                 if (delay > 0) {
                                     JOptionPane.showMessageDialog(null, 
                                         "Výtisk " + borrow.getNazev() + " byl vrácen pozdě\nSpozdné činí: " + delay * 5 + "Kč",
@@ -208,7 +212,6 @@ public class AdminJPanel extends JPanel {
         });
 
         reservationsJButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 String email = JOptionPane.showInputDialog(null,
@@ -224,7 +227,23 @@ public class AdminJPanel extends JPanel {
                     }
                 }
             }
-
+        });
+        borrowsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String email = JOptionPane.showInputDialog(null,
+                    "Zadejte email čtenáře", "Čtenář", JOptionPane.QUESTION_MESSAGE);
+                if (email != null) {
+                    DatabaseManager dbManager = DatabaseManager.getInstance();
+                    final Uzivatel user = dbManager.getUserByEmail(email);
+                    if (user != null) {
+                        MainJFrame.showBorrowDialog(user);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Čtenář: '" + email + "' neexistuje", "Chyba",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
         });
 
         waitingReservations.addActionListener(new ActionListener() {
@@ -239,12 +258,24 @@ public class AdminJPanel extends JPanel {
 
                         int i = 0;
                         Object[][] data = new Object[reservations.size()][];
-                        for (VwRezervace row: reservations) {
+                        for (final VwRezervace row: reservations) {
                             data[i] = new Object[3];
                             String name = row.getKrestniJmeno() + " " + row.getPrijmeni();
                             data[i][0] = name;
                             data[i][1] = row.getNazev();
-                            data[i][2] = new JButton("Splnit rezervaci");
+                            final JButton button = new JButton("Splnit rezervaci");
+                            button.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent ae) {
+                                    DatabaseManager dbManager = DatabaseManager.getInstance();
+                                    dbManager.fullfillReservation(row.getIdTitul());
+                                    JOptionPane.showMessageDialog(null, 
+                                        "Rezervace byla splněna", "", 
+                                        JOptionPane.INFORMATION_MESSAGE);
+                                    button.setEnabled(false);
+                                }
+                            });
+                            data[i][2] = button;
                             i++;
                         }
                         return data;
@@ -268,8 +299,9 @@ public class AdminJPanel extends JPanel {
         });
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
+        menuJPanel.add(borrowsButton);
         menuJPanel.add(newUserJButton);
-        menuJPanel.add(borrowsJButton);
+        menuJPanel.add(returnButton);
         menuJPanel.add(waitingReservations);
 
         add(menuJPanel, BorderLayout.CENTER);

@@ -111,8 +111,8 @@ public class DatabaseManager {
         try {
             query.execute();
             password = (String) query.getOutputParameterValue(4);
+            mEm.clear();
         } catch (PersistenceException e) {
-            System.out.println(e.getMessage());
             throw new EntityExistsException();
         }
         return password;
@@ -125,6 +125,7 @@ public class DatabaseManager {
         query.setParameter("_interval", null);
 
         query.execute();
+        mEm.clear();
     }
 
     public void createBorrowing(Vytisk print, Uzivatel user) {
@@ -134,6 +135,7 @@ public class DatabaseManager {
             transaction.begin();
             mEm.persist(borrowing);
             transaction.commit();
+            mEm.clear();
         } catch (PersistenceException ex) {
             throw new EntityExistsException();
         }
@@ -145,6 +147,7 @@ public class DatabaseManager {
         borrowing.setJeVraceno(true);
         mEm.persist(borrowing);
         transaction.commit();
+        mEm.clear();
     }
 
     public List<VwRezervace> getWaitingRezervations(int pageno) {
@@ -159,9 +162,11 @@ public class DatabaseManager {
             .getResultList();
     }
 
-    public List<VwVypujcka> getBorrowsOfUser(Uzivatel user) {
+    public List<VwVypujcka> getBorrowsOfUser(Uzivatel user, int pageno) {
         return mEm.createNamedQuery("Vypujcka.findByUser", VwVypujcka.class)
-            .setParameter("uzivatel", user.getIdUzivatel())
+            .setParameter(1, user.getIdUzivatel())
+            .setParameter(2, PAGE_SIZE)
+            .setParameter(3, pageno*PAGE_SIZE)
             .getResultList();
     }
     public List<VwRezervace> getReservationsOfUser(Uzivatel user, int pageno) {
@@ -182,6 +187,14 @@ public class DatabaseManager {
         }
         
     }
+
+    public void fullfillReservation(int id_titul) {
+        StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("VwRezervace.spln_rezervaci");
+        query.setParameter("_id_titul", id_titul);
+
+        query.execute();
+        mEm.clear();
+    }
     
     public static String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -195,7 +208,4 @@ public class DatabaseManager {
 
         return sb.toString();
     }
-
-    
-    
 }

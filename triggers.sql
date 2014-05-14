@@ -174,12 +174,26 @@ END;
 $_$ LANGUAGE plpgsql;
 
 -- Fulltextové vyhledávání
-CREATE VIEW titul_fulltext AS
-SELECT t.id_titul, t.nazev,
-setweight(to_tsvector('simple', t.nazev), 'A') ||
-setweight(to_tsvector('simple', coalesce(array_to_string(array_agg(a.prijmeni), ' '))), 'A') ||
-setweight(to_tsvector('simple', coalesce(array_to_string(array_agg(a.jmeno), ' '))), 'B') as document
-FROM titul t
-INNER JOIN titul_autor ta ON ta.id_titul = t.id_titul
-INNER JOIN autor a ON a.id_autor = ta.id_autor
-GROUP BY t.id_titul, t.nazev;
+CREATE INDEX titul_fulltext_idx ON titul USING gin(fulltext);
+
+CREATE OR REPLACE FUNCTION update_fulltext() RETURNS TRIGGER AS $_$
+BEGIN
+  UPDATE titul set fulltext = 
+  (SELECT
+    to_tsvector('simple', t.nazev) ||
+    to_tsvector('simple', coalesce(array_to_string(array_agg(a.prijmeni), ' '))) ||
+    to_tsvector('simple', coalesce(array_to_string(array_agg(a.jmeno), ' '))) 
+    FROM titul t
+    INNER JOIN titul_autor ta ON ta.id_titul = t.id_titul
+    INNER JOIN autor a ON a.id_autor = ta.id_autor
+    WHERE t.id_titul = NEW.id_titul
+    GROUP BY t.id_titul, t.nazev
+  )
+  WHERE titul.id_titul = NEW.id_titul;
+
+  RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+CREATE TRIGGER update_fulltext_trg AFTER INSERT OR UPDATE ON titul_autor
+FOR EACH ROW EXECUTE PROCEDURE update_fulltext();
+

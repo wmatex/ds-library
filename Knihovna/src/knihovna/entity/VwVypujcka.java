@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
@@ -28,16 +29,19 @@ import javax.persistence.TemporalType;
 @Table(name = "vw_vypujcka")
 @NamedQueries({
     @NamedQuery(
-        name="Vypujcka.findByUser",
-        query="SELECT v FROM VwVypujcka v WHERE v.idUzivatel = :uzivatel"
-            + " AND v.jeVraceno = false"
-    ),
-    @NamedQuery(
         name="Vypujcka.findByVytisk",
         query="SELECT v FROM VwVypujcka v WHERE v.idVytisk = :id"
             + " AND v.jeVraceno = false"
     )
 })
+@NamedNativeQuery(
+    name="Vypujcka.findByUser",
+    resultClass=VwVypujcka.class,
+    query="SELECT v.* FROM vw_vypujcka v WHERE v.id_uzivatel = ? "
+        + "AND v.je_vraceno = false "
+        + "ORDER BY datum_vraceni ASC "
+        + "LIMIT ? OFFSET ?"
+)
 public class VwVypujcka implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "id_uzivatel")
