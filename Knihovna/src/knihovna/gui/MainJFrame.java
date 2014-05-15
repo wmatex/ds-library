@@ -291,7 +291,7 @@ public class MainJFrame extends JFrame{
         Object[][] initial = fetcher.getResults(0);
         if (initial == null) {
             JOptionPane.showMessageDialog(null,
-                "Nemáte žádné výpůjčky",
+                "Uživatel nemá žádné výpujčky",
                 "Žádné výpůjčky", JOptionPane.WARNING_MESSAGE);
         } else {
             String[] columnNames = {
