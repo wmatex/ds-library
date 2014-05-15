@@ -182,7 +182,7 @@ public class MainJFrame extends JFrame{
         });
     }
 
-    public static void showReservationDialog(Uzivatel user) {
+    public static void showReservationDialog(final Uzivatel user) {
         ResultFetcher fetcher = new ResultFetcher() {
             @Override
             public Object[][] getResults(int pageno) {
@@ -234,7 +234,7 @@ public class MainJFrame extends JFrame{
         
     }
     
-    public static void showBorrowDialog(Uzivatel user) {
+    public static void showBorrowDialog(final Uzivatel user) {
         ResultFetcher fetcher = new ResultFetcher() {
             @Override
             public Object[][] getResults(int pageno) {
