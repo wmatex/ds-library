@@ -17,6 +17,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQuery;
+import static javax.persistence.ParameterMode.IN;
+import static javax.persistence.ParameterMode.OUT;
+import javax.persistence.StoredProcedureParameter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -29,6 +33,15 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vytisk.findAll", query = "SELECT v FROM Vytisk v"),
     @NamedQuery(name = "Vytisk.findByIdVytisk", query = "SELECT v FROM Vytisk v WHERE v.idVytisk = :idVytisk"),
     @NamedQuery(name = "Vytisk.findByCarKod", query = "SELECT v FROM Vytisk v WHERE v.carKod = :carKod")})
+@NamedStoredProcedureQuery(
+    name = "Vytisk.novy",
+    resultClasses = String.class,
+    procedureName = "novy_vytisk",
+    parameters = {
+        @StoredProcedureParameter(mode=IN, name="_printId", type=Integer.class),
+        @StoredProcedureParameter(mode=OUT, name="_barCode", type=String.class)
+    }
+)
 public class Vytisk implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

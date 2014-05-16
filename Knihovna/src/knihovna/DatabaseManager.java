@@ -1,9 +1,8 @@
 /*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
-*/
-
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package knihovna;
 
 import java.io.UnsupportedEncodingException;
@@ -30,23 +29,24 @@ import knihovna.entity.Vytisk;
  * @author wmatex
  */
 public class DatabaseManager {
+
     private static DatabaseManager mInstance = null;
     private final EntityManager mEm;
     private final EntityManagerFactory mEmf;
     private static final int PAGE_SIZE = 5;
-   
+
     private DatabaseManager() {
         mEmf = Persistence.createEntityManagerFactory("KnihovnaPU");
         mEm = mEmf.createEntityManager();
-        
+
     }
-    
+
     public static void init() {
         if (DatabaseManager.mInstance == null) {
             DatabaseManager.mInstance = new DatabaseManager();
         }
     }
-    
+
     public static void destroy() {
         if (DatabaseManager.mInstance != null) {
             DatabaseManager.mInstance.mEm.close();
@@ -57,14 +57,14 @@ public class DatabaseManager {
     public static DatabaseManager getInstance() {
         return DatabaseManager.mInstance;
     }
-    
+
     public Uzivatel login(String email, String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         String md5Password = md5(password);
         try {
             return mEm.createNamedQuery("Uzivatel.prihlasit", Uzivatel.class)
-                .setParameter("email", email)
-                .setParameter("heslo", md5Password)
-                .getSingleResult();
+                    .setParameter("email", email)
+                    .setParameter("heslo", md5Password)
+                    .getSingleResult();
         } catch (NoResultException ex) {
             return null;
         }
@@ -73,8 +73,8 @@ public class DatabaseManager {
     public Vytisk getPrintByBarcode(String barcode) {
         try {
             return mEm.createNamedQuery("Vytisk.findByCarKod", Vytisk.class)
-                .setParameter("carKod", barcode)
-                .getSingleResult();
+                    .setParameter("carKod", barcode)
+                    .getSingleResult();
         } catch (NoResultException ex) {
             return null;
         }
@@ -83,8 +83,8 @@ public class DatabaseManager {
     public Uzivatel getUserByEmail(String email) {
         try {
             return mEm.createNamedQuery("Uzivatel.findByEmail", Uzivatel.class)
-                .setParameter("email", email)
-                .getSingleResult();
+                    .setParameter("email", email)
+                    .getSingleResult();
         } catch (NoResultException ex) {
             return null;
         }
@@ -94,11 +94,25 @@ public class DatabaseManager {
         criteria = criteria.trim();
         criteria = criteria.replaceAll("\\s+", "|");
         return mEm.createNamedQuery("VwTitul.searchForTitul", VwTitul.class)
-            .setParameter(1, criteria)
-            .setParameter(2, criteria)
-            .setParameter(3, PAGE_SIZE)
-            .setParameter(4, pageno*PAGE_SIZE)
-            .getResultList();
+                .setParameter(1, criteria)
+                .setParameter(2, criteria)
+                .setParameter(3, PAGE_SIZE)
+                .setParameter(4, pageno * PAGE_SIZE)
+                .getResultList();
+    }
+
+    public String createPrint(Integer idTitul) {
+        StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("Vytisk.novy");
+        query.setParameter("_printId", idTitul);
+        String barcode = null;
+        try {
+            query.execute();
+            barcode = (String) query.getOutputParameterValue(13);
+            mEm.clear();
+        } catch (PersistenceException e) {
+            throw new EntityExistsException();
+        }
+        return barcode;
     }
 
     public String createUser(String name, String surname, String email) {
@@ -152,40 +166,41 @@ public class DatabaseManager {
 
     public List<VwRezervace> getWaitingRezervations(int pageno) {
         return mEm.createNamedQuery("VwRezervace.findWaiting", VwRezervace.class)
-            .setParameter(1, PAGE_SIZE)
-            .setParameter(2, pageno*PAGE_SIZE)
-            .getResultList();
+                .setParameter(1, PAGE_SIZE)
+                .setParameter(2, pageno * PAGE_SIZE)
+                .getResultList();
     }
 
     public List<Uzivatel> getUsers() {
         return mEm.createNamedQuery("Uzivatel.getAll", Uzivatel.class)
-            .getResultList();
+                .getResultList();
     }
 
     public List<VwVypujcka> getBorrowsOfUser(Uzivatel user, int pageno) {
         return mEm.createNamedQuery("Vypujcka.findByUser", VwVypujcka.class)
-            .setParameter(1, user.getIdUzivatel())
-            .setParameter(2, PAGE_SIZE)
-            .setParameter(3, pageno*PAGE_SIZE)
-            .getResultList();
+                .setParameter(1, user.getIdUzivatel())
+                .setParameter(2, PAGE_SIZE)
+                .setParameter(3, pageno * PAGE_SIZE)
+                .getResultList();
     }
+
     public List<VwRezervace> getReservationsOfUser(Uzivatel user, int pageno) {
         return mEm.createNamedQuery("VwRezervace.findByUser", VwRezervace.class)
-            .setParameter(1, user.getIdUzivatel())
-            .setParameter(2, PAGE_SIZE)
-            .setParameter(3, pageno*PAGE_SIZE)
-            .getResultList();
+                .setParameter(1, user.getIdUzivatel())
+                .setParameter(2, PAGE_SIZE)
+                .setParameter(3, pageno * PAGE_SIZE)
+                .getResultList();
     }
-    
-    public VwVypujcka getBorrowByVytisk(Vytisk print){
+
+    public VwVypujcka getBorrowByVytisk(Vytisk print) {
         try {
             return mEm.createNamedQuery("Vypujcka.findByVytisk", VwVypujcka.class)
-                .setParameter("id", print.getIdVytisk())
-                .getSingleResult();
-        } catch (NoResultException ex){
+                    .setParameter("id", print.getIdVytisk())
+                    .getSingleResult();
+        } catch (NoResultException ex) {
             return null;
         }
-        
+
     }
 
     public void fullfillReservation(int id_titul) {
@@ -195,12 +210,12 @@ public class DatabaseManager {
         query.execute();
         mEm.clear();
     }
-    
+
     public static String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(string.getBytes("UTF-8"));
         byte[] bytes = md.digest();
-        
+
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < bytes.length; i++) {
             sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
@@ -208,4 +223,5 @@ public class DatabaseManager {
 
         return sb.toString();
     }
+
 }

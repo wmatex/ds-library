@@ -44,6 +44,7 @@ public class AdminJPanel extends JPanel {
     private JButton returnButton;
     private JButton waitingReservations;
     private JButton borrowsButton;
+    private JButton newPrintJButton;
 
     public AdminJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -63,14 +64,16 @@ public class AdminJPanel extends JPanel {
         newUserJButton      = new JButton("Nový uživatel");
         returnButton        = new JButton("Vrátit knihu");
         waitingReservations = new JButton("Čekající rezervace");
-
+        newPrintJButton = new JButton("Přidat výtisk");
+        
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
         newUserJButton.setPreferredSize(buttonsDim);
         returnButton.setPreferredSize(buttonsDim);
         borrowsButton.setPreferredSize(buttonsDim);
         waitingReservations.setPreferredSize(buttonsDim);
-
+        newPrintJButton.setPreferredSize(buttonsDim);
+                
         newBorrowingJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -297,12 +300,24 @@ public class AdminJPanel extends JPanel {
                 }
             }
         });
+        
+        newPrintJButton.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AddPrintDialog addFrame = 
+                    new AddPrintDialog(null, "Hledat knihu");
+                
+            }
+            
+        });
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
         menuJPanel.add(borrowsButton);
         menuJPanel.add(newUserJButton);
         menuJPanel.add(returnButton);
         menuJPanel.add(waitingReservations);
+        menuJPanel.add(newPrintJButton);
 
         add(menuJPanel, BorderLayout.CENTER);
     }
