@@ -44,7 +44,8 @@ public class AdminJPanel extends JPanel {
     private JButton returnButton;
     private JButton waitingReservations;
     private JButton borrowsButton;
-    private JButton newPrintJButton;
+    private JButton searchButton;
+    private JButton addTitleButton;
 
     public AdminJPanel(Uzivatel user, MainJFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -64,7 +65,8 @@ public class AdminJPanel extends JPanel {
         newUserJButton      = new JButton("Nový uživatel");
         returnButton        = new JButton("Vrátit knihu");
         waitingReservations = new JButton("Čekající rezervace");
-        newPrintJButton = new JButton("Přidat výtisk");
+        searchButton        = new JButton("Hledat titul");
+        addTitleButton      = new JButton("Přidat titul");
         
         newBorrowingJButton.setPreferredSize(buttonsDim);
         reservationsJButton.setPreferredSize(buttonsDim);
@@ -72,7 +74,8 @@ public class AdminJPanel extends JPanel {
         returnButton.setPreferredSize(buttonsDim);
         borrowsButton.setPreferredSize(buttonsDim);
         waitingReservations.setPreferredSize(buttonsDim);
-        newPrintJButton.setPreferredSize(buttonsDim);
+        searchButton.setPreferredSize(buttonsDim);
+        addTitleButton.setPreferredSize(buttonsDim);
                 
         newBorrowingJButton.addActionListener(new ActionListener() {
             @Override
@@ -301,15 +304,24 @@ public class AdminJPanel extends JPanel {
             }
         });
         
-        newPrintJButton.addActionListener(new ActionListener(){
+        searchButton.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                AddPrintDialog addFrame = 
-                    new AddPrintDialog(null, "Hledat knihu");
+                SearchDialog searchDialog = 
+                    new SearchDialog(null, user, "Hledat knihu", true);
+                searchDialog.setVisible(true);
                 
             }
             
+        });
+
+        addTitleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                TitleDialog d = new TitleDialog("Nový titul", null);
+                d.setVisible(true);
+            }
         });
         menuJPanel.add(newBorrowingJButton);
         menuJPanel.add(reservationsJButton);
@@ -317,7 +329,8 @@ public class AdminJPanel extends JPanel {
         menuJPanel.add(newUserJButton);
         menuJPanel.add(returnButton);
         menuJPanel.add(waitingReservations);
-        menuJPanel.add(newPrintJButton);
+        menuJPanel.add(searchButton);
+        menuJPanel.add(addTitleButton);
 
         add(menuJPanel, BorderLayout.CENTER);
     }

@@ -62,8 +62,7 @@ public class Titul implements Serializable {
         this.idTitul = idTitul;
     }
 
-    public Titul(Integer idTitul, String nazev, short rokVydani, short vypujcniDobaDny, BigDecimal cena) {
-        this.idTitul = idTitul;
+    public Titul(String nazev, short rokVydani, short vypujcniDobaDny, BigDecimal cena) {
         this.nazev = nazev;
         this.rokVydani = rokVydani;
         this.vypujcniDobaDny = vypujcniDobaDny;

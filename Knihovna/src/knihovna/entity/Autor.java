@@ -15,6 +15,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQuery;
+import static javax.persistence.ParameterMode.IN;
+import javax.persistence.StoredProcedureParameter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -23,8 +26,17 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @XmlRootElement
+@NamedStoredProcedureQuery(
+    name = "Autor.vloz_autora",
+    procedureName = "vloz_autora",
+    parameters = {
+        @StoredProcedureParameter(mode=IN, name="_id_titul", type=Integer.class),
+        @StoredProcedureParameter(mode=IN, name="_jmeno", type=String.class),
+        @StoredProcedureParameter(mode=IN, name="_prijmeni", type=String.class)
+    }
+)
 @NamedQueries({
-    @NamedQuery(name = "Autor.findAll", query = "SELECT a FROM Autor a")})
+    @NamedQuery(name = "Autor.findAll", query = "SELECT a FROM Autor a ORDER BY a.prijmeni, a.jmeno")})
 public class Autor implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

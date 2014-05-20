@@ -48,7 +48,7 @@ public class NormalUserJPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 SearchDialog searchFrame = 
                     new SearchDialog(null,
-                    user, "Hledat knihu");
+                    user, "Hledat knihu", false);
                 searchFrame.setVisible(true);
             }
             

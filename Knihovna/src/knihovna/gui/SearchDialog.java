@@ -35,6 +35,7 @@ public class SearchDialog extends JDialog {
     private JPanel searchPanel;
     private JPanel buttonPanel;
     private JTextField nameField;
+    private boolean edit;
 
     private class ReservationButtonListener implements ActionListener {
         private Uzivatel user;
@@ -59,9 +60,10 @@ public class SearchDialog extends JDialog {
         }
     }
 
-    public SearchDialog(JFrame parent, Uzivatel user, String title) {
+    public SearchDialog(JFrame parent, Uzivatel user, String title, boolean edit) {
         super(parent);
         this.user = user;
+        this.edit = edit;
         init(parent);
         this.setTitle(title);
     }
@@ -101,16 +103,35 @@ public class SearchDialog extends JDialog {
                         Object[][] data = new Object[titules.size()][];
                         int i = 0;
                         for (VwTitul row: titules) {
-                            data[i] = new Object[6];
+                            if (!edit) {
+                                data[i] = new Object[6];
+                            } else {
+                                data[i] = new Object[7];
+                            }
                             data[i][0] = row.getNazev();
                             data[i][1] = generateAutorString(row);
                             data[i][2] = row.getRokVydani();
                             data[i][3] = row.getZanr();
                             data[i][4] = row.getVolneVytisky();
                             
-                            JButton button = new JButton("Vytvořit rezervaci");
-                            button.addActionListener(new ReservationButtonListener(user, row));
-                            data[i][5] = button;
+                            if (!edit) {
+                                JButton button = new JButton("Vytvořit rezervaci");
+                                button.addActionListener(new ReservationButtonListener(user, row));
+                                data[i][5] = button;
+                            } else {
+                                JButton update = new JButton("Upravit titul");
+                                update.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent ae) {
+                                        TitleDialog d = new TitleDialog("Upravit titul",
+                                        row);
+                                        d.setVisible(true);
+                                    }
+                                });
+                                data[i][5] = update;
+                                JButton delete = new JButton("Smazat titul");
+                                data[i][6] = delete;
+                            }
                             i++;
                         }
                         return data;

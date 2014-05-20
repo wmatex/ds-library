@@ -1,3 +1,10 @@
+-- 8.3 nema array_agg
+CREATE AGGREGATE array_agg(anyelement) (
+  SFUNC=array_append,
+  STYPE=anyarray,
+  INITCOND='{}'
+);
+
 CREATE OR REPLACE FUNCTION generate_bar_code() RETURNS TRIGGER AS $_$
 BEGIN
   NEW.car_kod := to_char(NEW.id_vytisk, 'FM0000000000000');
@@ -68,6 +75,28 @@ LEFT OUTER JOIN (
   GROUP BY id_titul
 ) v2 ON v2.id_titul = t.id_titul
 ORDER BY t.id_titul ASC;
+
+CREATE OR REPLACE RULE vw_titul_insert_rule AS ON INSERT TO vw_titul
+DO INSTEAD (
+  INSERT INTO titul (nazev, rok_vydani, vypujcni_doba_dny, cena, id_zanr)
+  VALUES (NEW.nazev, NEW.rok_vydani, NEW.vypujcni_doba_dny, NEW.cena,
+      (SELECT id_zanr FROM zanr WHERE zanr.nazev = NEW.zanr LIMIT 1)
+    )
+  );
+
+CREATE OR REPLACE RULE vw_titul_update_rule AS ON UPDATE TO vw_titul
+DO INSTEAD (
+  UPDATE titul SET
+  nazev = NEW.nazev, rok_vydani = NEW.rok_vydani,
+  vypujcni_doba_dny = NEW.vypujcni_doba_dny, cena = NEW.cena,
+  id_zanr = (SELECT id_zanr FROM zanr WHERE zanr.nazev = NEW.zanr LIMIT 1)
+  WHERE id_titul = NEW.id_titul
+);
+
+CREATE OR REPLACE RULE vw_titul_delete_rule AS ON DELETE TO vw_titul
+DO INSTEAD (
+  DELETE FROM titul WHERE id_titul = OLD.id_titul
+);
 
 -- Vsechny vypujcky
 CREATE OR REPLACE VIEW vw_vypujcka AS
@@ -196,4 +225,43 @@ END;
 $_$ LANGUAGE plpgsql;
 CREATE TRIGGER update_fulltext_trg AFTER INSERT OR UPDATE ON titul_autor
 FOR EACH ROW EXECUTE PROCEDURE update_fulltext();
+
+CREATE OR REPLACE FUNCTION update_titul_fulltext() RETURNS VOID AS $_$
+BEGIN
+  UPDATE titul set fulltext = 
+  (SELECT
+    to_tsvector('simple', t.nazev) ||
+    to_tsvector('simple', coalesce(array_to_string(array_agg(a.prijmeni), ' '))) ||
+    to_tsvector('simple', coalesce(array_to_string(array_agg(a.jmeno), ' '))) 
+    FROM titul t
+    INNER JOIN titul_autor ta ON ta.id_titul = t.id_titul
+    INNER JOIN autor a ON a.id_autor = ta.id_autor
+    WHERE t.id_titul = titul.id_titul
+    GROUP BY t.id_titul, t.nazev
+  );
+END;
+$_$ LANGUAGE plpgsql;
+
+-- Vlozi autora do tabulky autor, pokud neexistuje a spoji ho 
+-- s titulem pomoci tabulky titul_autor
+CREATE OR REPLACE FUNCTION vloz_autora(_id_titul int, _jmeno text,
+  _prijmeni text) RETURNS VOID AS $_$
+DECLARE
+  _id_autor int;
+BEGIN
+  SELECT id_autor INTO _id_autor
+  FROM autor
+  WHERE jmeno = _jmeno
+  AND prijmeni = _prijmeni;
+  IF NOT FOUND THEN
+    INSERT INTO autor (jmeno, prijmeni)
+    VALUES (_jmeno, _prijmeni)
+    RETURNING id_autor
+    INTO _id_autor;
+  END IF;
+
+  INSERT INTO titul_autor (id_titul, id_autor)
+  VALUES (_id_titul, _id_autor);
+END;
+$_$ LANGUAGE plpgsql;
 

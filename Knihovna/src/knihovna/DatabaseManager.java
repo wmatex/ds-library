@@ -18,6 +18,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.StoredProcedureQuery;
+import knihovna.entity.Autor;
 import knihovna.entity.Uzivatel;
 import knihovna.entity.VwRezervace;
 import knihovna.entity.VwTitul;
@@ -132,6 +133,12 @@ public class DatabaseManager {
         return password;
     }
 
+    public void changePassword(Uzivatel user, String password) {
+        user.setHeslo(password);
+        mEm.persist(user);
+        mEm.clear();
+    }
+
     public void createReservation(Uzivatel user, VwTitul title) {
         StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("VwRezervace.nova");
         query.setParameter("_id_uzivatel", user.getIdUzivatel());
@@ -209,6 +216,56 @@ public class DatabaseManager {
 
         query.execute();
         mEm.clear();
+    }
+
+    public List<String> getGenres() {
+        return mEm.createNamedQuery("VwTitul.getGenres", String.class)
+            .getResultList();
+    }
+
+    public List<Autor> getAllAuthors() {
+        return mEm.createNamedQuery("Autor.findAll", Autor.class)
+            .getResultList();
+    }
+
+    public EntityTransaction getTransaction() {
+        return mEm.getTransaction();
+    }
+
+    public int getGenreId(String genre) {
+        return mEm.createNamedQuery("VwTitul.getGenreId", Integer.class)
+            .setParameter(1, genre)
+            .getSingleResult();
+    }
+
+    public void insertAuthor(int idTitle, String firstName, String lastName) {
+        StoredProcedureQuery query = mEm.createNamedStoredProcedureQuery("Autor.vloz_autora");
+        query.setParameter("_id_titul", idTitle);
+        query.setParameter("_jmeno", firstName);
+        query.setParameter("_prijmeni", lastName);
+
+        query.execute();
+        mEm.clear();
+    }
+
+    public void merge(Object o) {
+        mEm.merge(o);
+        mEm.flush();
+    }
+
+    public void persist(Object o) {
+        mEm.persist(o);
+        mEm.flush();
+    }
+
+    public void clear() {
+        mEm.clear();
+    }
+
+    public void deleteAllBookAuthors(VwTitul book) {
+        mEm.createNamedQuery("VwTitul.deleteJoins")
+            .setParameter(1, book.getIdTitul())
+            .executeUpdate();
     }
 
     public static String md5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {

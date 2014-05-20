@@ -59,6 +59,7 @@ public class TableDialog extends JDialog {
         });
 
         final JButton prevButton = new JButton("Předchozí");
+        final JButton nextButton = new JButton("Další");
         prevButton.setEnabled(false);
         prevButton.addActionListener(new ActionListener() {
             @Override
@@ -68,9 +69,9 @@ public class TableDialog extends JDialog {
                 if (pageno < 1) {
                     prevButton.setEnabled(false);
                 }
+                nextButton.setEnabled(true);
             }
         });
-        final JButton nextButton = new JButton("Další");
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -78,10 +79,16 @@ public class TableDialog extends JDialog {
                 if (resultList != null) {
                     pageno++;
                     prevButton.setEnabled(true);
+                    if (fetcher.getResults(pageno+1) == null) {
+                        nextButton.setEnabled(false);
+                    }
                     createPanel(resultList);
                 }
             }
         });
+        if (fetcher.getResults(1) == null) {
+            nextButton.setEnabled(false);
+        }
         JPanel panel = new JPanel();
         panel.add(prevButton);
         panel.add(nextButton);

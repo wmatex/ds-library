@@ -11,7 +11,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -20,6 +24,8 @@ import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 
 /**
@@ -36,11 +42,42 @@ import javax.persistence.Table;
             + "ORDER BY ts_rank(f.fulltext, to_tsquery('simple', ?)) DESC "
             + "LIMIT ? OFFSET ?",
         resultClass=VwTitul.class
+    ),
+    @NamedNativeQuery(
+        name="VwTitul.getGenres",
+        query="SELECT nazev FROM zanr ORDER BY id_zanr",
+        resultSetMapping="genre-mapping"
+    ),
+    @NamedNativeQuery(
+        name="VwTitul.deleteJoins",
+        query="DELETE FROM titul_autor WHERE id_titul = ?"
+    ),
+    @NamedNativeQuery(
+        name="VwTitul.getGenreId",
+        query="SELECT id_zanr FROM zanr WHERE nazev = ? LIMIT 1",
+        resultSetMapping="genre-id-mapping"
+    )
+})
+@SqlResultSetMappings({
+    @SqlResultSetMapping(name="genre-mapping",
+        classes={
+            @ConstructorResult(targetClass=String.class, columns={
+                @ColumnResult(name="nazev", type=String.class)
+            })
+        }
+    ),
+    @SqlResultSetMapping(name="genre-id-mapping",
+        classes={
+            @ConstructorResult(targetClass=Integer.class, columns={
+                @ColumnResult(name="id_zanr", type=Integer.class)
+            })
+        }
     )
 })
 @Table(name = "vw_titul")
 public class VwTitul implements Serializable {
     private static final long serialVersionUID = 1L;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_titul")
     @Id
     private Integer idTitul;
@@ -61,6 +98,14 @@ public class VwTitul implements Serializable {
         inverseJoinColumns=@JoinColumn(name="id_autor")
     )
     private Collection<Autor> autors;
+
+    public VwTitul(String nazev, Short rokVydani, Short vypujcniDobaDny, BigDecimal cena, String zanr) {
+        this.nazev = nazev;
+        this.rokVydani = rokVydani;
+        this.vypujcniDobaDny = vypujcniDobaDny;
+        this.cena = cena;
+        this.zanr = zanr;
+    }
 
     public VwTitul() {
     }
